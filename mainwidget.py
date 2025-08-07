@@ -102,13 +102,16 @@ class MainWidget(BoxLayout):
         # Atualização do gráfico
         self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura']),0)
 
+    def stopRefresh(self):
+        self._updateWidgets = False
+
     def selecionar_partida(self, tipo):
         self.tipo_partida = tipo
 
         # Atualiza imagens dos botões
-        self.ids.btn_soft.background_normal = "imgs/btn_soft_sel.png" if tipo == 1 else "imgs/btn_soft.png"
-        self.ids.btn_inversor.background_normal = "imgs/btn_inversor_sel.png" if tipo == 2 else "imgs/btn_inversor.png"
-        self.ids.btn_direta.background_normal = "imgs/btn_direta_sel.png" if tipo == 3 else "imgs/btn_direta.png"
+        self.ids.btn_soft.background_normal = "imgs/botao_soft_press.jpg" if tipo == 1 else "imgs/botao_soft.jpg"
+        self.ids.btn_inversor.background_normal = "imgs/botao_inv_press.jpg" if tipo == 2 else "imgs/botao_inv.jpg"
+        self.ids.btn_direta.background_normal = "imgs/botao_direta_press.jpg" if tipo == 3 else "imgs/botao_direta.jpg"
 
     def alterna_motor(self):
         if self.motor_ligado:
