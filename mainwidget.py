@@ -90,7 +90,7 @@ class MainWidget(BoxLayout):
 
     def read_float_point(self, endereco):
         leitura= self._modbusClient.read_holding_registers(endereco,2)
-        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.BIG, wordorder = Endian.LITTLE)
+        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
 
         return decoder.decode_32bit_float()
 
