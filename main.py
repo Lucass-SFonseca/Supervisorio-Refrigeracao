@@ -11,11 +11,34 @@ class MainApp(App):
         """
         Método que gera o aplicativo com o Widget principal
         """
-        self._widget = MainWidget(scan_time=1000, server_ip='127.0.0.1', server_port=502)
+        self._widget = MainWidget(scan_time=1000, server_ip='10.15.30.183',server_port=502,
+        modbus_addrs = {
+            'Velocidade_saida_ar': 712,
+            'Vazao_saida_ar': 714,
+            'Temperatura': 710,
+            'Med_demanda': 1205,
+            'Velocidade_compresor': 1236,
+            'Alarme_Temperatura_baixa': 1231,
+            'Corrente_media': 845,
+            'DDP_fases': 840,
+            'temp_rolamento': 700,
+            'Corrente_comp': 726,
+            'Potencia_ativa': 735,
+            'potencia_aparente': 743,
+            'fator_de_pontencis': 747
+
+        },
+        )
+
         return self._widget
+    
+    def on_stop(self):
+        """
+        Método executado quando a aplicação é fechada
+        """
+        self._widget.stopRefresh()
 
 if __name__ == '__main__':
     Builder.load_string(open("mainwidget.kv", encoding="utf-8").read(),rulesonly=True)
     Builder.load_string(open("popups.kv", encoding="utf-8").read(),rulesonly=True)
     MainApp().run()
-#Em relação ao vídeo, vai mudar banco de dados, mudar imagem e atuação
