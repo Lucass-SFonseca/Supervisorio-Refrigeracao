@@ -38,12 +38,16 @@ class MainWidget(BoxLayout):
         self._leitura=Leitura()
         self.motor_ligado = False
         self.tipo_partida = 3
-        for key,value in kwargs.get('modbus_addrs').items():
+
+        self._tags = kwargs.get('modbus_addrs')
+        for key,value in self._tags.items():
             if key == 'Temperatura':
                 plot_color = (1,0,0,1)
             else:
                 plot_color = (random.random(), random.random(), random.random(), 1)
-            self._tags[key] = {'addr': value, 'color': plot_color}
+            self._tags[key]['color'] = plot_color
+
+        
         self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura']['color'])
     
     def startDataRead(self, ip, port):
@@ -86,11 +90,15 @@ class MainWidget(BoxLayout):
         """
         self._meas['timestamp'] = datetime.now()
         for key,value in self._tags.items():
-            self._meas['values'][key] = self.read_float_point(self._tags[key]["addr"])
+            if value["tipo"] == 'FP':
+                self._meas['values'][key] = self.read_float_point(self._tags[key]["addr"])
+            if value["tipo"] == '4X':
+                self._meas['values'][key] = self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"]
 
     def read_float_point(self, endereco):
-        leitura= self._modbusClient.read_holding_registers(endereco,2)
-        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
+        with self._lock:
+            leitura= self._modbusClient.read_holding_registers(endereco,2)
+            decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
 
         return decoder.decode_32bit_float()
 
@@ -125,14 +133,18 @@ class MainWidget(BoxLayout):
         self.ids.btn_inversor.background_normal = "imgs/botao_inv_press.jpg" if tipo == 2 else "imgs/botao_inv.jpg"
         self.ids.btn_direta.background_normal = "imgs/botao_direta_press.jpg" if tipo == 3 else "imgs/botao_direta.jpg"
 
+        with self._lock:
+            self._modbusClient.write_single_register(1324,tipo)
+
     def alterna_motor(self):
         if self.motor_ligado:
             self.desligar()
             self.ids.botao_toggle.background_normal = "imgs/icone_mot_off.jpg"
+            self.motor_ligado = False
         else:
             self.ligar()
             self.ids.botao_toggle.background_normal = "imgs/icone_mot_on.jpg"
-        self.motor_ligado = not self.motor_ligado
+            self.motor_ligado = not self.motor_ligado
 
     def ligar(self):
         if self.tipo_partida == 1:

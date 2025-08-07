@@ -95,31 +95,37 @@
             on_release: root.alterna_motor()
 
         Button:
-            id: botao_soft
+            id: btn_soft
             size_hint: (None, None)
             size: (40,40)
             background_normal: 'imgs/botao_soft.jpg'
             background_down: 'imgs/botao_soft.jpg'
             pos_hint: {'x':0.145,'y':0.48}
-            on_release: root.selecionar_partida(1)
+            on_release: 
+                print('Modo de partida: Soft start')
+                root.selecionar_partida(1)
 
         Button:
-            id: botao_inversor
+            id: btn_inversor
             size_hint: (None, None)
             size: (40,40)
             background_normal: 'imgs/botao_inv.jpg'
             background_down: 'imgs/botao_inv.jpg'
             pos_hint: {'x':0.19,'y':0.5}
-            on_release: root.selecionar_partida(2)
+            on_release: 
+                print('Modo de partida: Inversor')
+                root.selecionar_partida(2)
 
         Button:
-            id: botao_direta
+            id: btn_direta
             size_hint: (None, None)
             size: (40,40)
             background_normal: 'imgs/botao_direta.jpg'
             background_down: 'imgs/botao_direta.jpg'
             pos_hint: {'x':0.1,'y':0.5}
-            on_release: root.selecionar_partida(3)
+            on_release: 
+                print('Modo de partida: Direta')
+                root.selecionar_partida(3)
 
         Label:
             id: Velocidade_saida_ar
