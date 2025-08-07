@@ -31,6 +31,8 @@ class MainWidget(BoxLayout):
         self._meas['timestamp']=None
         self._meas['values']={}
         self._lock=Lock()
+        self.motor_ligado = False
+        self.tipo_partida = 3
     
     def startDataRead(self, ip, port):
         self._serverIP = ip
@@ -100,20 +102,83 @@ class MainWidget(BoxLayout):
         # Atualização do gráfico
         self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura']),0)
 
-    def liga_motor(self):
+    def selecionar_partida(self, tipo):
+        self.tipo_partida = tipo
+
+        # Atualiza imagens dos botões
+        self.ids.btn_soft.background_normal = "imgs/btn_soft_sel.png" if tipo == 1 else "imgs/btn_soft.png"
+        self.ids.btn_inversor.background_normal = "imgs/btn_inversor_sel.png" if tipo == 2 else "imgs/btn_inversor.png"
+        self.ids.btn_direta.background_normal = "imgs/btn_direta_sel.png" if tipo == 3 else "imgs/btn_direta.png"
+
+    def alterna_motor(self):
+        if self.motor_ligado:
+            self.desligar()
+            self.ids.botao_toggle.background_normal = "imgs/icone_mot_off.jpg"
+        else:
+            self.ligar()
+            self.ids.botao_toggle.background_normal = "imgs/icone_mot_on.jpg"
+        self.motor_ligado = not self.motor_ligado
+
+    def ligar(self):
+        if self.tipo_partida == 1:
+            self.liga_soft()
+        elif self.tipo_partida == 2:
+            self.liga_inversor()
+        elif self.tipo_partida == 3:
+            self.liga_direta()
+
+    def desligar(self):
+        if self.tipo_partida == 1:
+            self.desliga_soft()
+        elif self.tipo_partida == 2:
+            self.desliga_inversor()
+        elif self.tipo_partida == 3:
+            self.desliga_direta()
+
+    def liga_direta(self):
 
         with self._lock:
-            partida_ativa = self._modbusClient.read_holding_registers(1216,1)[0]
 
-            if partida_ativa == 1 or partida_ativa == 2 or partida_ativa == 3:
+            if self._modbusClient.read_holding_registers(1216,1)[0] == 0 and self._modbusClient.read_holding_registers(1319,1)[0] == 0:
+                self._modbusClient.write_single_register(1319,1)
+                pass
+
+    def desliga_direta(self):
+
+        with self._lock:
+
+            if self._modbusClient.read_holding_registers(1216,1)[0] == 0 and self._modbusClient.read_holding_registers(1319,1)[0] == 1:
+                self._modbusClient.write_single_register(1319,0)
+                pass
+
+    def liga_soft(self):
+
+        with self._lock:
+
+            if self._modbusClient.read_holding_registers(1216,1)[0] == 1 and self._modbusClient.read_holding_registers(1316,1)[0] == 0:
                 self._modbusClient.write_single_register(1316,1)
                 pass
 
-    def liga_motor(self):
+    def desliga_soft(self):
 
         with self._lock:
-            desliga_ativa = self._modbusClient.read_holding_registers(1216,1)[0]
 
-            if desliga_ativa == 1 or desliga_ativa == 2 or desliga_ativa == 3:
-                self._modbusClient.write_single_register(1316,1)
+            if self._modbusClient.read_holding_registers(1216,1)[0] == 1 and self._modbusClient.read_holding_registers(1316,1)[0] == 1:
+                self._modbusClient.write_single_register(1316,0)
+                pass
+
+    def liga_inversor(self):
+
+        with self._lock:
+
+            if self._modbusClient.read_holding_registers(1216,1)[0] == 2 and self._modbusClient.read_holding_registers(1312,1)[0] == 0:
+                self._modbusClient.write_single_register(1312,1)
+                pass
+
+    def desliga_inversor(self):
+
+        with self._lock:
+
+            if self._modbusClient.read_holding_registers(1216,1)[0] == 2 and self._modbusClient.read_holding_registers(1312,1)[0] == 1:
+                self._modbusClient.write_single_register(1312,0)
                 pass
