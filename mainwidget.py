@@ -1,5 +1,5 @@
 from kivy.uix.boxlayout import BoxLayout
-from popups import ModbusPopup, ScanPopup
+from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup
 from pyModbusTCP.client import ModbusClient
 from kivy.core.window import Window
 from threading import Thread, Lock
@@ -7,6 +7,8 @@ from time import sleep
 from datetime import datetime
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 from pymodbus.constants import Endian
+from timeseriesgraph import TimeSeriesGraph
+import random
 
 class MainWidget(BoxLayout):
     """
@@ -14,6 +16,8 @@ class MainWidget(BoxLayout):
     """
     _updateThread = None
     _updateWidgets = True
+    _tags={}
+    _max_points = 20
 
 
     def __init__(self, **kwargs):
@@ -31,8 +35,16 @@ class MainWidget(BoxLayout):
         self._meas['timestamp']=None
         self._meas['values']={}
         self._lock=Lock()
+        self._leitura=Leitura()
         self.motor_ligado = False
         self.tipo_partida = 3
+        for key,value in kwargs.get('modbus_addrs').items():
+            if key == 'Temperatura':
+                plot_color = (1,0,0,1)
+            else:
+                plot_color = (random.random(), random.random(), random.random(), 1)
+            self._tags[key] = {'addr': value, 'color': plot_color}
+        self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura']['color'])
     
     def startDataRead(self, ip, port):
         self._serverIP = ip
@@ -99,7 +111,7 @@ class MainWidget(BoxLayout):
         # Atualização do nível do termômetro
         self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura']/45*self.ids.termometro.size[1])
 
-        # Atualização do gráfico
+        # Atualização do gráfico    
         self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura']),0)
 
     def stopRefresh(self):

@@ -71,7 +71,7 @@
             background_down: 'imgs/graph_icon.jpg'
             pos_hint: {'x':0.02,'y':0.90}
             on_release:
-                #root._graph.open()
+                root._graph.open()
                 print("Click gráficos")
         Button:
             id: leituras
@@ -80,8 +80,10 @@
             background_normal: 'imgs/icone_leitura.jpg'
             background_down: 'imgs/icone_leitura.jpg'
             pos_hint: {'x':0.02,'y':0.80}
-            on_release:
+            on_release: 
+                root._leitura.open()
                 print("Click leituras")
+
 
         Button:
             id: botao_toggle
