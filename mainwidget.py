@@ -68,7 +68,6 @@ class MainWidget(BoxLayout):
                 self._modbusPopup.setInfo("Falha na conexão com o servidor")
         except Exception as e:
             print("Erro: ", e.args)
-            #self._modbusPopup.setInfo("Falha na conexão com o servidor")
 
 
     def updater(self):
