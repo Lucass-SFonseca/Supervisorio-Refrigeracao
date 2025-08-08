@@ -1,39 +1,42 @@
 #:kivy 2.3.1
+
 <MainWidget>:
-    orientation:'vertical'
+    orientation: 'vertical'
     canvas:
         Color:
-            rgb: 0.5,0.5,0.5
+            rgb: 0.2,0.2,0.2
         Rectangle:
             size: self.size
     BoxLayout:
         orientation: 'horizontal'
         size_hint: (1,0.1)
-        spacing: 10
+        spacing: 20
         Label:
-            text: 'SUPERVISÓRIO REFINARIA v1.01'
+            text: "SUPERVISORIO REFRIGERAÇÃO v1.0"
             size_hint_x: None
-            width: 300
+            bold: True
+            width: 350
+            halign: 'center'
         BoxLayout:
-            orientation:'vertical'
+            orientation: 'vertical'
             size_hint_x: None
-            width: 400
-            Label:
-                text: 'Configurações'
-            BoxLayout:
-                orientation:'horizontal'
-                Button:
-                    text: "MODBUS"
-                    on_release: root._modbusPopup.open()
-                Button:
-                    text: "Scan Time"
-                    on_release: root._scanPopup.open()
+            width: 380
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_x: None
+            width: 140
+            Button:
+                text: "MODBUS"
+                on_release: root._modbusPopup.open()
+            Button:
+                text: "Scan Time"
+                on_release: root._scanPopup.open()
         Image:
             id: img_con
             size_hint_x: None
-            width: 80
+            width: 50
+            halign: 'center'
             source: 'imgs/desconectado.png'
-            pos_hint: {'top':1, 'right':1}
 
     FloatLayout:
         canvas:
@@ -42,45 +45,111 @@
             Rectangle:
                 size: self.size
         Image:
-            source: 'imgs/Refinaria.png'
+            source: 'imgs/base_ig.png'
         Label:
-            id: fornalha
-            text: '-.- ºC'
+            id: lb_temp
+            size_hint: (None,None)
+            size: (termometro.size[0]*0.25, termometro.size[1])
+            pos_hint: {'x':0.76,'y':0.50}
+            canvas:
+                Color:
+                    rgb: (0.678,0.847,0.902)
+                Rectangle:
+                    size: self.size
+                    pos: (self.pos[0]+self.width*1.5, self.pos[1])
+        Image:
+            id: termometro
+            source: 'imgs/termometro.png'
+            size_hint: 0.17,0.17
+            pos_hint: lb_temp.pos_hint
+        
+        Button:
+            id: graficos
+            size_hint: (None, None)
+            size: (0.85*62,0.85*58)
+            background_normal: 'imgs/graph_icon.jpg'
+            background_down: 'imgs/graph_icon.jpg'
+            pos_hint: {'x':0.02,'y':0.90}
+            on_release:
+                root._graph.open()
+                print("Click gráficos")
+        Button:
+            id: leituras
+            size_hint: (None, None)
+            size: (0.85*62,0.85*58)
+            background_normal: 'imgs/icone_leitura.jpg'
+            background_down: 'imgs/icone_leitura.jpg'
+            pos_hint: {'x':0.02,'y':0.80}
+            on_release: 
+                root._leitura.open()
+                print("Click leituras")
+
+
+        Button:
+            id: botao_toggle
+            size_hint: (None, None)
+            size: (65,65)
+            background_normal: 'imgs/icone_mot_off.jpg'
+            background_down: 'imgs/icone_mot_off.jpg'
+            pos_hint: {'x':0.133,'y':0.55}
+            on_release: root.alterna_motor()
+
+        Button:
+            id: btn_soft
+            size_hint: (None, None)
+            size: (40,40)
+            background_normal: 'imgs/botao_soft.jpg'
+            background_down: 'imgs/botao_soft.jpg'
+            pos_hint: {'x':0.145,'y':0.48}
+            on_release: 
+                print('Modo de partida: Soft start')
+                root.selecionar_partida(1)
+
+        Button:
+            id: btn_inversor
+            size_hint: (None, None)
+            size: (40,40)
+            background_normal: 'imgs/botao_inv.jpg'
+            background_down: 'imgs/botao_inv.jpg'
+            pos_hint: {'x':0.19,'y':0.5}
+            on_release: 
+                print('Modo de partida: Inversor')
+                root.selecionar_partida(2)
+
+        Button:
+            id: btn_direta
+            size_hint: (None, None)
+            size: (40,40)
+            background_normal: 'imgs/botao_direta.jpg'
+            background_down: 'imgs/botao_direta.jpg'
+            pos_hint: {'x':0.1,'y':0.5}
+            on_release: 
+                print('Modo de partida: Direta')
+                root.selecionar_partida(3)
+
+        Label:
+            id: Velocidade_saida_ar
+            text: '-.- m/s'
             font_size: 25
             bold: True
             halign: 'center'
-            pos_hint:{'x': -0.45,'y':0.01}
-            color: 0,0,0,1
-        TempLabel:
-            id: gas_ref
-            pos_hint: {'x':0.175,'y':0.28}
-        TempLabel:
-            id:gasolina
-            pos_hint: {'x':0.175, 'y': 0.205}
-        TempLabel:
-            id:nafta
-            pos_hint: {'x':0.175, 'y': 0.13}
-        TempLabel:
-            id:querosene
-            pos_hint: {'x':0.175, 'y': 0.055}
-        TempLabel:
-            id:diesel
-            pos_hint: {'x':0.175, 'y': -0.02}
-        TempLabel:
-            id:oleo_lub
-            pos_hint: {'x':0.175, 'y': -0.095}
-        TempLabel:
-            id:oleo_comb
-            pos_hint: {'x':0.175, 'y': -0.17}
-        TempLabel:
-            id:residuos
-            pos_hint: {'x':0.175, 'y': -0.245}
-        
+            pos_hint: {'x':0.01,'y': 0.42}
+            color: 0,0,0,1    
 
-        
-<TempLabel@Label>:
-    text: '-.- ºC'
-    font_size: 25
-    bold: True
-    halign:'center'
-    color:0,0,0,1
+        Label:
+            id: Vazao_saida_ar
+            text: '-.- m³/s'
+            font_size: 25
+            bold: True
+            halign: 'center'
+            pos_hint: {'x':0.01,'y': 0.36}
+            color: 0,0,0,1    
+
+        Label:
+            id: Temperatura
+            text: '-.- °C'
+            font_size: 25
+            bold: True
+            halign: 'center'
+            pos_hint: {'x':0.36,'y':0.22}
+            color: 0,0,0,1   

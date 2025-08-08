@@ -13,9 +13,16 @@ class MainApp(App):
         """
         self._widget = MainWidget(scan_time=1000, server_ip='127.0.0.1', server_port=502)
         return self._widget
+    
+    def on_stop(self):
+        """
+        Método executado quando a aplicação é fechada
+        """
+        self._widget.stopRefresh()
 
 if __name__ == '__main__':
     Builder.load_string(open("mainwidget.kv", encoding="utf-8").read(),rulesonly=True)
     Builder.load_string(open("popups.kv", encoding="utf-8").read(),rulesonly=True)
     MainApp().run()
-#Em relação ao vídeo, vai mudar banco de dados, mudar imagem e atuação
+
+    #Em relação ao vídeo, vai mudar banco de dados, mudar imagem e atuação
