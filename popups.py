@@ -50,6 +50,9 @@ class Leitura(Popup):
 class LabeledCheckBoxDataGraph(BoxLayout):
     pass
 
+class LabeledChangeBoxDataGraph(BoxLayout):
+    pass
+
 class DataGraphPopup(Popup):
     def __init__(self, xmax, plot_color, **kwargs):
         super().__init__(**kwargs)

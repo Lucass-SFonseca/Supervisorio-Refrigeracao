@@ -208,6 +208,15 @@
     Label:
         id: label
 
+<LabeledChangeBoxDataGraph>:
+    orientation: 'horizontal'
+    size_hint: (0.1, 1)
+    CheckBox:
+        id: checkbox
+        on_active: (print(f"Você pressionou {n_label.text}")) if self.active else None
+    Label:
+        id: n_label
+
 <DataGraphPopup>:
     title: "Grafico de temperatura na Saida"
     BoxLayout:
@@ -228,6 +237,33 @@
             xmin: 0
             ymin: 0
             ymax: 50
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1, 0.05)
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: (0.5, 1)
+                Label:
+                    size_hint: (0.3, 1)
+                    text: "Natureza da Medida"
+                LabeledChangeBoxDataGraph:
+                    id: calores
+                    on_kv_post:
+                        self.ids.n_label.text = 'Temperaturas'
+                        self.ids.checkbox.group = 'cb_group'
+                        self.ids.checkbox.active = True
+                LabeledChangeBoxDataGraph:
+                    id: pot
+                    on_kv_post:
+                        self.ids.n_label.text = 'Potências'
+                        self.ids.checkbox.group = 'cb_group'
+                LabeledChangeBoxDataGraph:
+                    id: vel
+                    on_kv_post:
+                        self.ids.n_label.text = 'Velocidades'
+                        self.ids.checkbox.group = 'cb_group'
+
+
         BoxLayout:
             orientation: 'horizontal'
             size_hint: (1, 0.05)
