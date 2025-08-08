@@ -81,123 +81,216 @@
                     root.dismiss()
 
 <Leitura>:
-    title: "leitura"
-    size_hint_y: None
-    size_hint_x: None
-    height: 600
-    width: 400
+    title: "LEITURA DE DADOS"
     BoxLayout:
-        id: layout
         orientation: 'vertical'
-        GridLayout:
-            cols: 2
-            rows: 10
-            Label:
-                text: "Média demanda"
-                font_size: 14
-            Label:
-                id: Med_demanda
-                text: "0.03"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            
-            Label:
-                text: "Temperatura"
-                font_size: 14
-            Label:
-                id: Temperatura
-                text: "26 °C"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            
-            Label:
-                text: "Velocidade do Compressor"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "0 m/s"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            
-            Label:
-                text: "Temperatura Baixa"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "0"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'            
-            
-            Label:
-                text: "Corrente Média"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "10 A"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            Label:
-                text: "DDp Fases"
-                font_size: 14
-            Label:
-                id: txt_ip
-                text: "220 V"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            
-            Label:
-                text: "Temp Rolamento"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "75°C"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            
-            Label:
-                text: "Corrente Compressor"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "20 A"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            
-            Label:
-                text: "Potência Ativa"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "1500 W"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'            
-            
-            Label:
-                text: "Fator de Potência"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "0.85"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1,0.1)
+            canvas.before:
+                Color:
+                    rgb: 0.9,0.9,0.9
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            TempPopLabel:
+                bold: True
+                text: "Rotação:"
+            TempPopLabel:
+                id: rot_motor
+            TempPopLabel:
+                bold: True
+                text: "Torque:"
+            TempPopLabel:
+                id: torque_motor
 
-            Button:
-                size_hint_y: None
-                height: 40
-                text: "Fechar"
-                on_release:
-                    root.dismiss()
-                    root.clearInfo()
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1,0.01)
+
+        GridLayout:
+            rows: 3
+            cols: 2
+            spacing: 5
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgb: 0.9,0.9,0.9
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                rows: 5
+                cols: 2
+                TempPopLabel:
+                    text: "Temperatura (ºC)"
+                    bold: True
+                BoxLayout:
+                TempPopLabel:
+                    text: "Enrolamento R"
+                TempPopLabel:
+                    id: temp_enrolamento_R_motor
+                TempPopLabel:
+                    text: "Enrolamento S"
+                TempPopLabel:
+                    id: temp_enrolamento_S_motor
+                TempPopLabel:
+                    text: "Enrolamento T"
+                TempPopLabel:
+                    id: temp_enrolamento_T_motor
+                TempPopLabel:
+                    text: "Carcaça"
+                TempPopLabel:
+                    id: temperatura_carcaca
+
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgb: 0.9,0.9,0.9
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                rows: 5
+                cols: 2
+                TempPopLabel:
+                    text: "Potencia Aparente (VA)"
+                    bold: True
+                BoxLayout:
+                TempPopLabel:
+                    text: "Enrolamento R"
+                TempPopLabel:
+                    id: potencia_aparente_r
+                TempPopLabel:
+                    text: "Enrolamento S"
+                TempPopLabel:
+                    id: potencia_aparente_s
+                TempPopLabel:
+                    text: "Enrolamento T"
+                TempPopLabel:
+                    id: potencia_aparente_t
+                TempPopLabel:
+                    text: "Total"
+                TempPopLabel:
+                    id: potencia_aparente_total
+
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgb: 0.9,0.9,0.9
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                rows: 5
+                cols: 2
+                TempPopLabel:
+                    text: "Corrente (A)"
+                    bold: True
+                BoxLayout:
+                TempPopLabel:
+                    text: "Enrolamento R"
+                TempPopLabel:
+                    id: corrente_R
+                TempPopLabel:
+                    text: "Enrolamento S"
+                TempPopLabel:
+                    id: corrente_S
+                TempPopLabel:
+                    text: "Enrolamento T"
+                TempPopLabel:
+                    id: corrente_T
+                TempPopLabel:
+                    text: "Média"
+                TempPopLabel:
+                    id: corrente_media
+
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgb: 0.9,0.9,0.9
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                rows: 5
+                cols: 2
+                TempPopLabel:
+                    text: "Potencia Reativa (VAr)"
+                    bold: True
+                BoxLayout:
+                TempPopLabel:
+                    text: "Enrolamento R"
+                TempPopLabel:
+                    id: potencia_reativa_r
+                TempPopLabel:
+                    text: "Enrolamento S"
+                TempPopLabel:
+                    id: potencia_reativa_s
+                TempPopLabel:
+                    text: "Enrolamento T"
+                TempPopLabel:
+                    id: potencia_reativa_t
+                TempPopLabel:
+                    text: "Total"
+                TempPopLabel:
+                    id: potencia_reativa_total
+
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgb: 0.9,0.9,0.9
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                rows: 5
+                cols: 2
+                TempPopLabel:
+                    text: "Tensão (V)"
+                    bold: True
+                BoxLayout:
+                TempPopLabel:
+                    text: "RS"
+                TempPopLabel:
+                    id: tensao_RS
+                TempPopLabel:
+                    text: "ST"
+                TempPopLabel:
+                    id: tensao_ST
+                TempPopLabel:
+                    text: "TR"
+                TempPopLabel:
+                    id: tensao_TR
+                TempPopLabel:
+                    text: ""
+                TempPopLabel:
+                    text: ""
+
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgb: 0.9,0.9,0.9
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                rows: 5
+                cols: 2
+                TempPopLabel:
+                    text: "Potencia Ativa (w)"
+                    bold: True
+                BoxLayout:
+                TempPopLabel:
+                    text: "Enrolamento R"
+                TempPopLabel:
+                    id: potencia_ativa_r
+                TempPopLabel:
+                    text: "Enrolamento S"
+                TempPopLabel:
+                    id: potencia_ativa_s
+                TempPopLabel:
+                    text: "Enrolamento T"
+                TempPopLabel:
+                    id: potencia_ativa_t
+                TempPopLabel:
+                    text: "Total"
+                TempPopLabel:
+                    id: potencia_ativa_total
 
 <LabeledCheckBoxDataGraph>:
     orientation: 'horizontal'
@@ -257,3 +350,9 @@
                 text: "Fechar"
                 size_hint: (0.2, 1)
                 on_release: root.dismiss()
+
+<TempPopLabel@Label>:
+    text: "-.-"
+    halign: 'center'
+    color: (0.1,0.1,0.1,1)
+    font_size: 16

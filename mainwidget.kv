@@ -50,7 +50,7 @@
             id: lb_temp
             size_hint: (None,None)
             size: (termometro.size[0]*0.25, termometro.size[1])
-            pos_hint: {'x':0.76,'y':0.50}
+            pos_hint: {'x':0.81,'y':0.35}
             canvas:
                 Color:
                     rgb: (0.678,0.847,0.902)
@@ -62,7 +62,36 @@
             source: 'imgs/termometro.png'
             size_hint: 0.17,0.17
             pos_hint: lb_temp.pos_hint
-        
+
+        Label:
+            id: lb_vazao
+            size_hint: (None,None)
+            size: (vazao.size[0]*0.25, vazao.size[1])
+            pos_hint: {'x':0.78,'y':0.57}
+            canvas:
+                Color:
+                    rgb: (0.678,0.847,0.902)
+                Rectangle:
+                    size: self.size
+                    pos: (self.pos[0]+self.width*1.5, self.pos[1])
+        Image:
+            id: vazao
+            source: 'imgs/saida_de_ar.png'
+            size_hint: 0.23,0.23
+            pos_hint: lb_vazao.pos_hint
+
+        Image:
+            id: aquecedor1
+            source: 'imgs/aquecedor.jpg'
+            size_hint: 0.13,0.13
+            pos_hint: {'x':0.485,'y':0.617}
+
+        Image:
+            id: aquecedor2
+            source: 'imgs/aquecedor.jpg'
+            size_hint: 0.13,0.13
+            pos_hint: {'x':0.7,'y':0.617}
+
         Button:
             id: graficos
             size_hint: (None, None)
@@ -80,18 +109,16 @@
             background_normal: 'imgs/icone_leitura.jpg'
             background_down: 'imgs/icone_leitura.jpg'
             pos_hint: {'x':0.02,'y':0.80}
-            on_release: 
+            on_release:
                 root._leitura.open()
                 print("Click leituras")
-
-
         Button:
             id: botao_toggle
             size_hint: (None, None)
             size: (65,65)
             background_normal: 'imgs/icone_mot_off.jpg'
             background_down: 'imgs/icone_mot_off.jpg'
-            pos_hint: {'x':0.133,'y':0.55}
+            pos_hint: {'x':0.068,'y':0.62}
             on_release: root.alterna_motor()
 
         Button:
@@ -100,7 +127,7 @@
             size: (40,40)
             background_normal: 'imgs/botao_soft.jpg'
             background_down: 'imgs/botao_soft.jpg'
-            pos_hint: {'x':0.145,'y':0.48}
+            pos_hint: {'x':0.08,'y':0.55}
             on_release: 
                 print('Modo de partida: Soft start')
                 root.selecionar_partida(1)
@@ -111,7 +138,7 @@
             size: (40,40)
             background_normal: 'imgs/botao_inv.jpg'
             background_down: 'imgs/botao_inv.jpg'
-            pos_hint: {'x':0.19,'y':0.5}
+            pos_hint: {'x':0.125,'y':0.57}
             on_release: 
                 print('Modo de partida: Inversor')
                 root.selecionar_partida(2)
@@ -122,34 +149,47 @@
             size: (40,40)
             background_normal: 'imgs/botao_direta.jpg'
             background_down: 'imgs/botao_direta.jpg'
-            pos_hint: {'x':0.1,'y':0.5}
+            pos_hint: {'x':0.035,'y':0.57}
             on_release: 
                 print('Modo de partida: Direta')
                 root.selecionar_partida(3)
 
-        Label:
-            id: Velocidade_saida_ar
-            text: '-.- m/s'
-            font_size: 25
-            bold: True
-            halign: 'center'
-            pos_hint: {'x':0.01,'y': 0.42}
-            color: 0,0,0,1    
-
-        Label:
-            id: Vazao_saida_ar
-            text: '-.- m³/s'
-            font_size: 25
-            bold: True
-            halign: 'center'
-            pos_hint: {'x':0.01,'y': 0.36}
-            color: 0,0,0,1    
-
-        Label:
+        TempLabel:
             id: Temperatura
             text: '-.- °C'
-            font_size: 25
-            bold: True
-            halign: 'center'
-            pos_hint: {'x':0.36,'y':0.22}
-            color: 0,0,0,1   
+            pos_hint: {'x':0.40,'y':-0.18}
+
+        TempLabel:
+            id: Velocidade_saida_ar
+            font_size: 18
+            pos_hint: {'x':0.343,'y': 0.377}
+
+        TempLabel:
+            id: Vazao_saida_ar
+            font_size: 18
+            pos_hint: {'x':0.413,'y': 0.377}
+
+        TempLabel:
+            id: pit01
+            pos_hint: {'x':-0.18,'y':-0.03}
+
+        TempLabel:
+            id: pit02
+            pos_hint: {'x':-0.07,'y':-0.03}
+
+        TempLabel:
+            id: pit03
+            pos_hint: {'x':-0.21,'y':0.41}
+        TempLabel:
+            id: tit01
+            pos_hint: {'x':0.01,'y':-0.09}
+        TempLabel:
+            id: tit02
+            pos_hint: {'x':0.01,'y':-0.225}
+
+<TempLabel@Label>:
+    text: '-.-'
+    font_size: 22
+    bold: True
+    halign: 'center'
+    color: 0,0,0,1

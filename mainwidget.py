@@ -41,14 +41,10 @@ class MainWidget(BoxLayout):
 
         self._tags = kwargs.get('modbus_addrs')
         for key,value in self._tags.items():
-            if key == 'Temperatura':
-                plot_color = (1,0,0,1)
-            else:
-                plot_color = (random.random(), random.random(), random.random(), 1)
+            plot_color = (random.random(), random.random(), random.random(), 1)
             self._tags[key]['color'] = plot_color
 
-        
-        self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura']['color'])
+        self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura_saida']['color'])
     
     def startDataRead(self, ip, port):
         self._serverIP = ip
@@ -97,7 +93,7 @@ class MainWidget(BoxLayout):
 
     def read_float_point(self, endereco):
         with self._lock:
-            leitura= self._modbusClient.read_holding_registers(endereco,2)
+            leitura = self._modbusClient.read_holding_registers(endereco,2)
             decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
 
         return decoder.decode_32bit_float()
@@ -108,19 +104,44 @@ class MainWidget(BoxLayout):
         """
         # Atualização das labels específicas
         if 'Velocidade_saida_ar' in self.ids:
-            self.ids.Velocidade_saida_ar.text = f"{round(self._meas['values']['Velocidade_saida_ar'],2)} m/s"
+            self.ids.Velocidade_saida_ar.text = f"{round(self._meas['values']['Velocidade_saida_ar'],2)}"
         
         if 'Vazao_saida_ar' in self.ids:
-            self.ids.Vazao_saida_ar.text = f"{round(self._meas['values']['Vazao_saida_ar'],2)} m³/s"
+            self.ids.Vazao_saida_ar.text = f"{round(self._meas['values']['Vazao_saida_ar'],2)}"
         
         if 'Temperatura' in self.ids:
-            self.ids.Temperatura.text = f"{round(self._meas['values']['Temperatura'],2)} °C"
+            self.ids.Temperatura.text = f"{round(self._meas['values']['Temperatura_saida'],2)} °C"
+
+        if 'pit01' in self.ids:
+            self.ids.pit01.text = f"{round(self._meas['values']['ve.pit'],2)}"
+        
+        if 'pit02' in self.ids:
+            self.ids.pit02.text = f"{round(self._meas['values']['ve.pit'],2)}"
+
+        if 'pit03' in self.ids:
+            self.ids.pit03.text = f"{round(self._meas['values']['ve.pit'],2)}"
+        
+        if 'tit01' in self.ids:
+            self.ids.tit01.text = f"{round(self._meas['values']['ve.pit'],2)}"
+        
+        if 'tit02' in self.ids:
+            self.ids.tit02.text = f"{round(self._meas['values']['ve.pit'],2)}"
+
+        # Atualização das labels do popup Leituras
+        for key,value in self._tags.items():
+            if self.ids.get(key) != None:
+                self.ids[key].text = str(self._meas['values'][key])
+            elif self._leitura.ids.get(key) != None:
+                self._leitura.ids[key].text = str(self._meas['values'][key])
 
         # Atualização do nível do termômetro
-        self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura']/45*self.ids.termometro.size[1])
+        self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura_saida']/45*self.ids.termometro.size[1])
+
+        # Atualização do widget de vazão
+        self.ids.lb_vazao.size = (self.ids.lb_vazao.size[0],self._meas['values']['Vazao_saida_ar']/45*self.ids.vazao.size[1])
 
         # Atualização do gráfico    
-        self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura']),0)
+        self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura_saida']),0)
 
     def stopRefresh(self):
         self._updateWidgets = False
