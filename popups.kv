@@ -213,9 +213,19 @@
     size_hint: (0.1, 1)
     CheckBox:
         id: checkbox
-        on_active: (print(f"Você pressionou {n_label.text}")) if self.active else None
+        on_active:
+            (app.root.set_graph_variable(n_label.text, unidaderef.text) if app and app.root else None) if self.active else None
+
     Label:
         id: n_label
+    Label:
+        id: unidaderef
+        text: ''
+        size_hint_x: None
+        width: 0
+        opacity: 0
+
+
 
 <DataGraphPopup>:
     title: "Grafico de temperatura na Saida"
@@ -252,16 +262,22 @@
                         self.ids.n_label.text = 'Temperaturas'
                         self.ids.checkbox.group = 'cb_group'
                         self.ids.checkbox.active = True
+                        self.ids.unidaderef.text = "Temperatura [°C]"
+                        
+
                 LabeledChangeBoxDataGraph:
                     id: pot
                     on_kv_post:
-                        self.ids.n_label.text = 'Potências'
+                        self.ids.n_label.text = 'Potencia_ativa'
                         self.ids.checkbox.group = 'cb_group'
+                        self.ids.unidaderef.text = "Potência [kW]"
+
                 LabeledChangeBoxDataGraph:
                     id: vel
                     on_kv_post:
-                        self.ids.n_label.text = 'Velocidades'
+                        self.ids.n_label.text = 'Velocidade_saida_ar'
                         self.ids.checkbox.group = 'cb_group'
+                        self.ids.unidaderef.text = "Velocidade [m/s]"
 
 
         BoxLayout:

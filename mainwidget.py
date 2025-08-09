@@ -10,6 +10,8 @@ from pymodbus.constants import Endian
 from timeseriesgraph import TimeSeriesGraph
 import random
 
+
+
 class MainWidget(BoxLayout):
     """
     Widget principal da aplicação
@@ -47,7 +49,8 @@ class MainWidget(BoxLayout):
                 plot_color = (random.random(), random.random(), random.random(), 1)
             self._tags[key]['color'] = plot_color
 
-        
+        self._selected_tag = "Temperatura"
+
         self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura']['color'])
     
     def startDataRead(self, ip, port):
@@ -120,7 +123,15 @@ class MainWidget(BoxLayout):
         self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura']/45*self.ids.termometro.size[1])
 
         # Atualização do gráfico    
-        self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura']),0)
+        self._graph.ids.graph.updateGraph((self._meas['timestamp'], self._meas['values'][self._selected_tag]), 0)
+
+    def set_graph_variable(self, var_name, y_label):
+        self._selected_tag = var_name
+        # Muda o label do eixo Y
+        self._graph.ids.graph.ylabel = y_label
+        # Limpa o gráfico para começar do zero
+        self._graph.ids.graph.clearPlots()
+        self._graph.ids.graph.add_plot(self._graph.plot)
 
     def stopRefresh(self):
         self._updateWidgets = False
