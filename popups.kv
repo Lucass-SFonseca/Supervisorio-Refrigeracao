@@ -257,3 +257,60 @@
                 text: "Fechar"
                 size_hint: (0.2, 1)
                 on_release: root.dismiss()
+
+<HistoricoPopup>:
+    title: "Consulta de Dados Históricos"
+    size_hint: (0.8, 0.8)
+    auto_dismiss: False
+    BoxLayout:
+        orientation: "vertical"
+        spacing: dp(10)
+        padding: dp(10)
+
+        BoxLayout:
+            orientation: "vertical"
+            spacing: dp(5)
+            Label:
+                text: "Início (DD/MM/AAAA HH:MM:SS):"
+                size_hint_y: None
+                height: dp(25)
+            TextInput:
+                id: txt_inicio
+                text: ""
+                hint_text: "01/08/2025 00:00:00"
+                multiline: False
+
+        BoxLayout:
+            orientation: "vertical"
+            spacing: dp(5)
+            Label:
+                text: "Fim (DD/MM/AAAA HH:MM:SS):"
+                size_hint_y: None
+                height: dp(25)
+            TextInput:
+                id: txt_fim
+                text: ""
+                hint_text: "02/08/2025 00:00:00"
+                multiline: False
+
+        BoxLayout:
+            size_hint_y: None
+            height: dp(40)
+            spacing: dp(10)
+            Button:
+                text: "Buscar Dados"
+                on_release: root.buscar_dados()
+            Button:
+                text: "Fechar"
+                on_release: root.dismiss()
+
+        Label:
+            id: lbl_resultado
+            text: ""
+            markup: True
+            size_hint_y: None
+            height: dp(25)
+
+        BoxLayout:
+            id: area_resultado
+            orientation: "vertical"
