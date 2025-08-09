@@ -70,7 +70,7 @@ class MainWidget(BoxLayout):
             else:
                 self._modbusPopup.setInfo("Falha na conexão com o servidor")
         except Exception as e:
-            print("Erro: ", e.args)
+            print("Erro startdata: ", e.args)
 
 
     def updater(self):
@@ -85,7 +85,7 @@ class MainWidget(BoxLayout):
                 sleep(self._scan_time/1000)
         except Exception as e:
             self._modbusClient.close()
-            print("Erro: ",e.args)
+            print("Erro updater: ",e.args)
 
     def readData(self):
         """
