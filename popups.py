@@ -71,12 +71,14 @@ class HistoricalDataPopup(Popup):
             start_dt = datetime.strptime(start_str, "%d/%m/%Y %H:%M:%S")
             end_dt = datetime.strptime(end_str, "%d/%m/%Y %H:%M:%S")
         except ValueError:
-            self._show_error("Formato de data inválido! Use DD/MM/AAAA HH:MM:SS")
+            self.ids.lbl_result.text = "[color=ff3333]Formato inválido: use DD/MM/AAAA HH:MM:SS[/color]"
             return
 
         session = Session()
-        results = session.query(Medidas).filter(Medidas.data_hora.between(start_dt, end_dt)).all()
-        session.close()
+        try:
+            results = session.query(Medidas).filter(Medidas.data_hora.between(start_dt, end_dt)).order_by(Medidas.data_hora).all()
+        finally:
+            session.close()
 
         grid = self.ids.results_grid
         grid.clear_widgets()
@@ -85,19 +87,21 @@ class HistoricalDataPopup(Popup):
             grid.add_widget(Label(text="Nenhum dado encontrado nesse intervalo."))
             return
 
-        # Cabeçalho
-        headers = ["ID", "Data/Hora"] + [col.name for col in Medidas.__table__.columns if col.name not in ['id','data_hora']]
-        header_text = " | ".join(headers)
-        grid.add_widget(Label(text=header_text, bold=True))
+        # Cabeçalho com nomes das colunas (exceto id/data_hora)
+        col_names = [col.name for col in Medidas.__table__.columns if col.name not in ('id', 'data_hora')]
+        header = " | ".join(["ID", "Data/Hora"] + col_names)
+        grid.add_widget(Label(text=header, size_hint_y=None, height=28, bold=True))
 
         for med in results:
-            linha = [str(med.id), med.data_hora.strftime("%d/%m/%Y %H:%M:%S")]
-            for col in Medidas.__table__.columns:
-                if col.name not in ['id','data_hora']:
-                    valor = getattr(med, col.name)
-                    linha.append(f"{valor:.2f}" if isinstance(valor, float) else str(valor))
-            grid.add_widget(Label(text=" | ".join(linha)))
-
-    def _show_error(self, msg):
-        popup = Popup(title="Erro", content=Label(text=msg), size_hint=(0.6,0.4))
-        popup.open()
+            row = [str(med.id), med.data_hora.strftime("%d/%m/%Y %H:%M:%S")]
+            for col in col_names:
+                val = getattr(med, col)
+                if val is None:
+                    row.append("")
+                else:
+                    # Formata floats com 2 casas
+                    try:
+                        row.append(f"{val:.2f}")
+                    except Exception:
+                        row.append(str(val))
+            grid.add_widget(Label(text=" | ".join(row), size_hint_y=None, height=24))

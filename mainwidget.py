@@ -27,6 +27,7 @@ class MainWidget(BoxLayout):
         """
         super().__init__()
         criar_tabela()
+        self._db_lock = Lock()
         self._scan_time = kwargs.get('scan_time')
         self._serverIP = kwargs.get('server_ip')
         self._serverPort = kwargs.get('server_port')
@@ -89,30 +90,45 @@ class MainWidget(BoxLayout):
         """
         self._meas['timestamp'] = datetime.now()
         for key, value in self._tags.items():
-            if value["tipo"] == 'FP':
-                self._meas['values'][key] = self.read_float_point(self._tags[key]["addr"])
-            elif value["tipo"] == '4X':
-                regs = self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)
-                if regs:
-                    self._meas['values'][key] = regs[0] / value["div"]
+            try:
+                if value["tipo"] == 'FP':
+                    val = self.read_float_point(self._tags[key]["addr"])  # já trata erros internamente
+                elif value["tipo"] == '4X':
+                    regs = self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)
+                    val = regs[0] / value.get("div", 1) if regs else None
                 else:
-                    self._meas['values'][key] = None  # Falha na leitura
+                    val = None
+            except Exception as e:
+                val = None
+                print(f"Erro leitura {key}: {e}")
 
-        # Gravar no banco
+            self._meas['values'][key] = val
+
+        # ----- gravação no banco -----
+        session = Session()
         try:
-            session = Session()
             nova_medida = Medidas(data_hora=self._meas['timestamp'])
-            for campo in self._meas['values']:
-                # Atenção: os nomes do dicionário _meas['values'] podem ter pontos, 
-                # mas na tabela o nome da coluna é com underscore (ex: 've.tit02' -> 've_tit02')
-                nome_campo = campo.replace('.', '_')
+            # atribui somente os campos que existem na tabela
+            for campo, valor in self._meas['values'].items():
+                nome_campo = campo.replace('.', '_')   # converte 've.tit02' -> 've_tit02'
                 if hasattr(nova_medida, nome_campo):
-                    setattr(nova_medida, nome_campo, self._meas['values'][campo])
-            session.add(nova_medida)
-            session.commit()
-            session.close()
+                    # Converte None/or other -> None ou float
+                    if valor is None:
+                        setattr(nova_medida, nome_campo, None)
+                    else:
+                        try:
+                            setattr(nova_medida, nome_campo, float(valor))
+                        except Exception:
+                            setattr(nova_medida, nome_campo, None)
+            # commit protegido por lock (para evitar problemas com várias threads)
+            with self._db_lock:
+                session.add(nova_medida)
+                session.commit()
         except Exception as e:
+            session.rollback()
             print(f"Erro ao salvar no banco: {e}")
+        finally:
+            session.close()
         
     def abrir_consulta_historica(self):
         popup = HistoricalDataPopup()

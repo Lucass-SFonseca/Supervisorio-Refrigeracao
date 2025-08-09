@@ -359,70 +359,64 @@
 
 <HistoricalDataPopup>:
     title: "Consulta de Dados Históricos"
-    size_hint: 0.8, 0.8
+    size_hint: (0.9, 0.9)
     auto_dismiss: False
+
     BoxLayout:
         orientation: "vertical"
-        padding: 20
-        spacing: 15
+        padding: dp(12)
+        spacing: dp(8)
 
-        GridLayout:
-            cols: 2
+        BoxLayout:
+            orientation: "horizontal"
             size_hint_y: None
-            height: self.minimum_height
-            row_default_height: "40dp"
-            row_force_default: True
-            spacing: 10
-
+            height: dp(32)
             Label:
                 text: "Início (DD/MM/AAAA HH:MM:SS):"
                 size_hint_x: None
-                width: 220
-                halign: "right"
-                valign: "middle"
-                text_size: self.size
-
+                width: dp(260)
             TextInput:
                 id: start_datetime
                 multiline: False
                 hint_text: "01/08/2025 00:00:00"
-                size_hint_x: 1
 
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            height: dp(32)
             Label:
                 text: "Fim (DD/MM/AAAA HH:MM:SS):"
                 size_hint_x: None
-                width: 220
-                halign: "right"
-                valign: "middle"
-                text_size: self.size
-
+                width: dp(260)
             TextInput:
                 id: end_datetime
                 multiline: False
                 hint_text: "02/08/2025 00:00:00"
-                size_hint_x: 1
 
         BoxLayout:
             size_hint_y: None
-            height: "45dp"
-            spacing: 10
-
+            height: dp(40)
+            spacing: dp(10)
             Button:
                 text: "Buscar Dados"
                 on_release: root.buscar_dados()
-
             Button:
                 text: "Fechar"
                 on_release: root.dismiss()
 
+        Label:
+            id: lbl_result
+            text: ""
+            size_hint_y: None
+            height: dp(20)
+            markup: True
+
         ScrollView:
-            size_hint: 1, 1
+            do_scroll_x: True
+            do_scroll_y: True
             GridLayout:
                 id: results_grid
                 cols: 1
                 size_hint_y: None
                 height: self.minimum_height
-                row_default_height: "30dp"
-                row_force_default: True
-                padding: 10
-                spacing: 5
+                row_default_height: dp(24)

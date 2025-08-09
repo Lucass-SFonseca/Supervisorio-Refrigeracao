@@ -2,6 +2,7 @@ from sqlalchemy import create_engine, Column, Integer, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+import os
 
 Base = declarative_base()
 
@@ -10,7 +11,7 @@ class Medidas(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     data_hora = Column(DateTime, default=datetime.now)
 
-    # Exemplo de colunas (adicione as que precisar, seguindo o padrão)
+    # Colunas (mesmas que você mandou)
     temp_enrolamento_R_motor = Column(Float)
     temp_enrolamento_S_motor = Column(Float)
     temp_enrolamento_T_motor = Column(Float)
@@ -46,9 +47,11 @@ class Medidas(Base):
     ve_pit02 = Column(Float)
     ve_pit03 = Column(Float)
 
-# Configura o banco e cria a tabela (SQLite)
-engine = create_engine("sqlite:///medidas.db", connect_args={"check_same_thread": False})
-Session = sessionmaker(bind=engine)
+# garante pasta (opcional)
+DB_FILE = "medidas.db"
+engine = create_engine(f"sqlite:///{DB_FILE}", connect_args={"check_same_thread": False})
+# Sessões seguras por thread
+Session = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 def criar_tabela():
     Base.metadata.create_all(engine)
