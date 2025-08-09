@@ -1,5 +1,6 @@
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
+from kivy.uix.button import Button
 from kivy_garden.graph import LinePlot
 from kivy.uix.boxlayout import BoxLayout
 from datetime import datetime
@@ -69,8 +70,6 @@ class HistoricoPopup(Popup):
         self._db = DBWriter()
 
     def buscar_dados(self):
-        """Busca dados no banco e exibe na área de resultados.
-        """
         try:
             inicio = self.ids.txt_inicio.text.strip()
             fim = self.ids.txt_fim.text.strip()
@@ -88,18 +87,95 @@ class HistoricoPopup(Popup):
                 self.ids.lbl_resultado.text = "[color=ff0000]Nenhum registro encontrado[/color]"
                 return
 
-            tabela = GridLayout(cols=1, size_hint_y=None)
-            tabela.bind(minimum_height=tabela.setter('height'))
-
+            # Monta colunas e dados
+            colunas = ["Timestamp"] + list(resultados[0]["data"].keys())
+            dados = []
             for reg in resultados:
-                linha = f"{reg['id']} | {reg['timestamp'].strftime('%d/%m/%Y %H:%M:%S')} | {reg['data']}"
-                tabela.add_widget(Label(text=linha, size_hint_y=None, height=25))
+                linha = [reg["timestamp"].strftime("%d/%m/%Y %H:%M:%S")]
+                linha.extend([reg["data"][tag] for tag in reg["data"].keys()])
+                dados.append(linha)
 
-            scroll = ScrollView()
-            scroll.add_widget(tabela)
-
-            self.ids.area_resultado.clear_widgets()
-            self.ids.area_resultado.add_widget(scroll)
+            # Abre novo popup com tabela
+            TabelaPopup(colunas, dados).open()
 
         except Exception as e:
             self.ids.lbl_resultado.text = f"[color=ff0000]Erro: {e}[/color]"
+
+    
+class TabelaPopup(Popup):
+    def __init__(self, colunas, dados, **kwargs):
+        super().__init__(**kwargs)
+        self.title = "Resultados da Busca"
+        self.size_hint = (0.95, 0.95)
+
+        # Layout da tabela
+        tabela = GridLayout(cols=len(colunas),
+                            size_hint=(None, None),
+                            spacing=2,
+                            padding=2)
+        tabela.bind(minimum_height=tabela.setter('height'))
+        tabela.bind(minimum_width=tabela.setter('width'))
+
+        
+        # Cabeçalho com fundo cinza
+        for col in colunas:
+            header = Label(
+                text=f"[b]{col}[/b]",
+                markup=True,
+                size_hint=(None, None),
+                size=(150, 30),
+                color=(1, 1, 1, 1)
+            )
+            with header.canvas.before:
+                from kivy.graphics import Color, Rectangle
+                Color(0.2, 0.2, 0.2, 1)  # cinza escuro
+                header._rect = Rectangle(size=header.size, pos=header.pos)
+                header.bind(size=lambda inst, val: setattr(header._rect, 'size', val))
+                header.bind(pos=lambda inst, val: setattr(header._rect, 'pos', val))
+            tabela.add_widget(header)
+
+        max_chars_timestamp = 19  # timestamp completo (ex: dd/mm/yyyy hh:mm:ss)
+        max_chars_valores = 9    # demais colunas
+
+        for i, reg in enumerate(dados):
+            bg_color = (0.95, 0.95, 0.95, 1) if i % 2 == 0 else (1, 1, 1, 1)
+            for j, valor in enumerate(reg):
+                texto = str(valor)
+                if j == 0:  # coluna do timestamp
+                    if len(texto) > max_chars_timestamp:
+                        texto = texto[:max_chars_timestamp] + "..."
+                    largura = 180  # largura maior para timestamp
+                else:
+                    if len(texto) > max_chars_valores:
+                        texto = texto[:max_chars_valores] + "..."
+                    largura = 150  # largura padrão
+
+                cell = Label(
+                    text=texto,
+                    size_hint=(None, None),
+                    size=(largura, 25),
+                    color=(0, 0, 0, 1)
+                )
+                with cell.canvas.before:
+                    from kivy.graphics import Color, Rectangle
+                    Color(*bg_color)
+                    cell._rect = Rectangle(size=cell.size, pos=cell.pos)
+                    cell.bind(size=lambda inst, val: setattr(cell._rect, 'size', val))
+                    cell.bind(pos=lambda inst, val: setattr(cell._rect, 'pos', val))
+                tabela.add_widget(cell)
+
+
+        # ScrollView dupla
+        scroll = ScrollView(size_hint=(1, 1), do_scroll_x=True, do_scroll_y=True)
+        scroll.add_widget(tabela)
+
+        # Layout final do popup
+        layout = BoxLayout(orientation="vertical", spacing=5)
+        layout.add_widget(scroll)
+
+        btn_fechar = Button(text="Fechar", size_hint_y=None, height=40)
+        btn_fechar.bind(on_release=self.dismiss)
+        layout.add_widget(btn_fechar)
+
+        self.add_widget(layout)
+
