@@ -42,11 +42,11 @@ class MainApp(App):
             'Temperatura_saida': {'addr': 710, 'tipo': 'FP', 'l/e': 'l', 'div': 1, 'valor': 1, 'unid': '°C'},
             'Vazao_saida_ar': {'addr': 714, 'tipo': 'FP', 'l/e': 'l', 'div': 1, 'unid': 'm^3/h'},
             'Velocidade_saida_ar': {'addr': 712, 'tipo': 'FP', 'l/e': 'l', 'div': 1, 'unid': 'm/s'},
-            've.tit02': {'addr': 1218, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': '°C'},
-            've.tit01': {'addr': 1220, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': '°C'},
-            've.pit01': {'addr': 1222, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'PSI'},
-            've.pit02': {'addr': 1224, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'PSI'},
-            've.pit03': {'addr': 1226, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'mmH2O'}
+            've_tit02': {'addr': 1218, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': '°C'},
+            've_tit01': {'addr': 1220, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': '°C'},
+            've_pit01': {'addr': 1222, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'PSI'},
+            've_pit02': {'addr': 1224, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'PSI'},
+            've_pit03': {'addr': 1226, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'mmH2O'}
         }
         )
 

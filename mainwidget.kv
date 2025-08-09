@@ -153,6 +153,13 @@
             on_release: 
                 print('Modo de partida: Direta')
                 root.selecionar_partida(3)
+        
+        Button:
+            text: "Consultar Dados Históricos"
+            size_hint_y: None
+            height: "40dp"
+            on_release: root.abrir_consulta_historica()
+
 
         TempLabel:
             id: Temperatura

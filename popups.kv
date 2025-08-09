@@ -356,3 +356,73 @@
     halign: 'center'
     color: (0.1,0.1,0.1,1)
     font_size: 16
+
+<HistoricalDataPopup>:
+    title: "Consulta de Dados Históricos"
+    size_hint: 0.8, 0.8
+    auto_dismiss: False
+    BoxLayout:
+        orientation: "vertical"
+        padding: 20
+        spacing: 15
+
+        GridLayout:
+            cols: 2
+            size_hint_y: None
+            height: self.minimum_height
+            row_default_height: "40dp"
+            row_force_default: True
+            spacing: 10
+
+            Label:
+                text: "Início (DD/MM/AAAA HH:MM:SS):"
+                size_hint_x: None
+                width: 220
+                halign: "right"
+                valign: "middle"
+                text_size: self.size
+
+            TextInput:
+                id: start_datetime
+                multiline: False
+                hint_text: "01/08/2025 00:00:00"
+                size_hint_x: 1
+
+            Label:
+                text: "Fim (DD/MM/AAAA HH:MM:SS):"
+                size_hint_x: None
+                width: 220
+                halign: "right"
+                valign: "middle"
+                text_size: self.size
+
+            TextInput:
+                id: end_datetime
+                multiline: False
+                hint_text: "02/08/2025 00:00:00"
+                size_hint_x: 1
+
+        BoxLayout:
+            size_hint_y: None
+            height: "45dp"
+            spacing: 10
+
+            Button:
+                text: "Buscar Dados"
+                on_release: root.buscar_dados()
+
+            Button:
+                text: "Fechar"
+                on_release: root.dismiss()
+
+        ScrollView:
+            size_hint: 1, 1
+            GridLayout:
+                id: results_grid
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                row_default_height: "30dp"
+                row_force_default: True
+                padding: 10
+                spacing: 5

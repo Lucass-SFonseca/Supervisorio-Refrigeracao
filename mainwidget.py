@@ -1,5 +1,5 @@
 from kivy.uix.boxlayout import BoxLayout
-from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup
+from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup, HistoricalDataPopup
 from pyModbusTCP.client import ModbusClient
 from kivy.core.window import Window
 from threading import Thread, Lock
@@ -8,6 +8,7 @@ from datetime import datetime
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 from pymodbus.constants import Endian
 from timeseriesgraph import TimeSeriesGraph
+from db import Session, Medidas, criar_tabela
 import random
 
 class MainWidget(BoxLayout):
@@ -25,6 +26,7 @@ class MainWidget(BoxLayout):
         Construtor do widget principal
         """
         super().__init__()
+        criar_tabela()
         self._scan_time = kwargs.get('scan_time')
         self._serverIP = kwargs.get('server_ip')
         self._serverPort = kwargs.get('server_port')
@@ -83,13 +85,39 @@ class MainWidget(BoxLayout):
     def readData(self):
         """
         Método para a leitura dos dados por meio do protocolo MODBUS
+        Também grava no banco de dados a cada leitura
         """
         self._meas['timestamp'] = datetime.now()
-        for key,value in self._tags.items():
+        for key, value in self._tags.items():
             if value["tipo"] == 'FP':
                 self._meas['values'][key] = self.read_float_point(self._tags[key]["addr"])
-            if value["tipo"] == '4X':
-                self._meas['values'][key] = self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"]
+            elif value["tipo"] == '4X':
+                regs = self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)
+                if regs:
+                    self._meas['values'][key] = regs[0] / value["div"]
+                else:
+                    self._meas['values'][key] = None  # Falha na leitura
+
+        # Gravar no banco
+        try:
+            session = Session()
+            nova_medida = Medidas(data_hora=self._meas['timestamp'])
+            for campo in self._meas['values']:
+                # Atenção: os nomes do dicionário _meas['values'] podem ter pontos, 
+                # mas na tabela o nome da coluna é com underscore (ex: 've.tit02' -> 've_tit02')
+                nome_campo = campo.replace('.', '_')
+                if hasattr(nova_medida, nome_campo):
+                    setattr(nova_medida, nome_campo, self._meas['values'][campo])
+            session.add(nova_medida)
+            session.commit()
+            session.close()
+        except Exception as e:
+            print(f"Erro ao salvar no banco: {e}")
+        
+    def abrir_consulta_historica(self):
+        popup = HistoricalDataPopup()
+        popup.open()
+
 
     def read_float_point(self, endereco):
         with self._lock:
