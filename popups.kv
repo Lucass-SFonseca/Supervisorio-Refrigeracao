@@ -259,7 +259,7 @@
                 LabeledChangeBoxDataGraph:
                     id: calores
                     on_kv_post:
-                        self.ids.n_label.text = 'Temperaturas'
+                        self.ids.n_label.text = 'Temperatura'
                         self.ids.checkbox.group = 'cb_group'
                         self.ids.checkbox.active = True
                         self.ids.unidaderef.text = "Temperatura [°C]"
@@ -278,6 +278,13 @@
                         self.ids.n_label.text = 'Velocidade_saida_ar'
                         self.ids.checkbox.group = 'cb_group'
                         self.ids.unidaderef.text = "Velocidade [m/s]"
+
+                LabeledChangeBoxDataGraph:
+                    id: crnt
+                    on_kv_post:
+                        self.ids.n_label.text = 'Corrente_media'
+                        self.ids.checkbox.group = 'cb_group'
+                        self.ids.unidaderef.text = "Corrente [A]"
 
 
         BoxLayout:

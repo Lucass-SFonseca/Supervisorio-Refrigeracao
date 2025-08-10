@@ -9,6 +9,7 @@ from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 from pymodbus.constants import Endian
 from timeseriesgraph import TimeSeriesGraph
 import random
+from kivy_garden.graph import LinePlot
 
 
 
@@ -118,20 +119,27 @@ class MainWidget(BoxLayout):
         
         if 'Temperatura' in self.ids:
             self.ids.Temperatura.text = f"{round(self._meas['values']['Temperatura'],2)} °C"
+        
+        if 'Corrente_media' in self.ids:
+            self.ids.Corrente_media.text = f"{round(self._meas['values']['Corrente_media'],2)} A"
 
         # Atualização do nível do termômetro
         self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura']/45*self.ids.termometro.size[1])
 
         # Atualização do gráfico    
-        self._graph.ids.graph.updateGraph((self._meas['timestamp'], self._meas['values'][self._selected_tag]), 0)
+        if (self._selected_tag in self._meas['values']and self._meas['values'][self._selected_tag] is not None ):
+            self._graph.ids.graph.updateGraph((self._meas['timestamp'], self._meas['values'][self._selected_tag]), 0)
 
     def set_graph_variable(self, var_name, y_label):
         self._selected_tag = var_name
-        # Muda o label do eixo Y
         self._graph.ids.graph.ylabel = y_label
-        # Limpa o gráfico para começar do zero
+
+        # Limpa o gráfico e cria um novo plot com a cor da variável selecionada
         self._graph.ids.graph.clearPlots()
-        self._graph.ids.graph.add_plot(self._graph.plot)
+        new_plot = LinePlot(line_width=1.5, color=self._tags[var_name]['color'])
+        self._graph.plot = new_plot  # guarda a referência se precisar depois
+        self._graph.ids.graph.add_plot(new_plot)
+
 
     def stopRefresh(self):
         self._updateWidgets = False
