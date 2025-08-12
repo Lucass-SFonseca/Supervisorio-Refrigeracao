@@ -108,6 +108,14 @@ class TabelaPopup(Popup):
         self.title = "Resultados da Busca"
         self.size_hint = (0.95, 0.95)
 
+        # Cor de fundo do popup
+        with self.canvas.before:
+            from kivy.graphics import Color, Rectangle
+            Color(0.95, 0.95, 0.95, 1)  # cinza claro
+            self.bg_rect_popup = Rectangle(size=self.size, pos=self.pos)
+            self.bind(size=lambda inst, val: setattr(self.bg_rect_popup, 'size', val))
+            self.bind(pos=lambda inst, val: setattr(self.bg_rect_popup, 'pos', val))
+
         # Layout da tabela
         tabela = GridLayout(cols=len(colunas),
                             size_hint=(None, None),
@@ -116,39 +124,52 @@ class TabelaPopup(Popup):
         tabela.bind(minimum_height=tabela.setter('height'))
         tabela.bind(minimum_width=tabela.setter('width'))
 
-        
-        # Cabeçalho com fundo cinza
+        # Fundo geral da tabela
+        with tabela.canvas.before:
+            from kivy.graphics import Color, Rectangle
+            Color(0.95, 0.95, 0.95, 1)  # cinza claro
+            self.bg_rect = Rectangle(size=tabela.size, pos=tabela.pos)
+            tabela.bind(size=lambda inst, val: setattr(self.bg_rect, 'size', val))
+            tabela.bind(pos=lambda inst, val: setattr(self.bg_rect, 'pos', val))
+
+        # Cabeçalho
         for col in colunas:
             header = Label(
                 text=f"[b]{col}[/b]",
                 markup=True,
                 size_hint=(None, None),
                 size=(150, 30),
-                color=(1, 1, 1, 1)
+                color=(0, 0, 0, 1),
+                text_size=(150, None),
+                halign="center",
+                valign="middle",
+                shorten=True,
+                shorten_from="right"
             )
             with header.canvas.before:
                 from kivy.graphics import Color, Rectangle
-                Color(0.2, 0.2, 0.2, 1)  # cinza escuro
+                Color(1, 0.8, 0.8, 1)  # cor do cabeçalho
                 header._rect = Rectangle(size=header.size, pos=header.pos)
                 header.bind(size=lambda inst, val: setattr(header._rect, 'size', val))
                 header.bind(pos=lambda inst, val: setattr(header._rect, 'pos', val))
             tabela.add_widget(header)
 
-        max_chars_timestamp = 19  # timestamp completo (ex: dd/mm/yyyy hh:mm:ss)
-        max_chars_valores = 9    # demais colunas
+        max_chars_timestamp = 19  # timestamp completo
+        max_chars_valores = 9     # demais colunas
 
+        # Linhas de dados
         for i, reg in enumerate(dados):
             bg_color = (0.95, 0.95, 0.95, 1) if i % 2 == 0 else (1, 1, 1, 1)
             for j, valor in enumerate(reg):
                 texto = str(valor)
-                if j == 0:  # coluna do timestamp
+                if j == 0:  # timestamp
                     if len(texto) > max_chars_timestamp:
                         texto = texto[:max_chars_timestamp] + "..."
-                    largura = 180  # largura maior para timestamp
+                    largura = 180
                 else:
                     if len(texto) > max_chars_valores:
                         texto = texto[:max_chars_valores] + "..."
-                    largura = 150  # largura padrão
+                    largura = 150
 
                 cell = Label(
                     text=texto,
@@ -164,13 +185,12 @@ class TabelaPopup(Popup):
                     cell.bind(pos=lambda inst, val: setattr(cell._rect, 'pos', val))
                 tabela.add_widget(cell)
 
-
         # ScrollView dupla
         scroll = ScrollView(size_hint=(1, 1), do_scroll_x=True, do_scroll_y=True)
         scroll.add_widget(tabela)
 
         # Layout final do popup
-        layout = BoxLayout(orientation="vertical", spacing=5)
+        layout = BoxLayout(orientation="vertical", spacing=5, padding=5)
         layout.add_widget(scroll)
 
         btn_fechar = Button(text="Fechar", size_hint_y=None, height=40)
@@ -178,4 +198,5 @@ class TabelaPopup(Popup):
         layout.add_widget(btn_fechar)
 
         self.add_widget(layout)
+
 
