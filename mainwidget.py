@@ -94,10 +94,15 @@ class MainWidget(BoxLayout):
         """
         self._meas['timestamp'] = datetime.now()
         for key,value in self._tags.items():
+            raw_val = None
             if value["tipo"] == 'FP':
-                self._meas['values'][key] = self.read_float_point(self._tags[key]["addr"])
-            if value["tipo"] == '4X':
-                self._meas['values'][key] = self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"]
+                raw_val = self.read_float_point(self._tags[key]["addr"])
+            elif value["tipo"] == '4X':
+                raw_val = self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"]
+
+            if self._meas['values'][key] is not None:
+                scale = value.get("scale", 1)
+                self._meas['values'][key] = raw_val * scale
 
     def read_float_point(self, endereco):
         with self._lock:
