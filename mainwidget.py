@@ -94,15 +94,10 @@ class MainWidget(BoxLayout):
         """
         self._meas['timestamp'] = datetime.now()
         for key,value in self._tags.items():
-            raw_val = None
             if value["tipo"] == 'FP':
-                raw_val = self.read_float_point(self._tags[key]["addr"])
-            elif value["tipo"] == '4X':
-                raw_val = self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"]
-
-            if self._meas['values'][key] is not None:
-                scale = value.get("scale", 1)
-                self._meas['values'][key] = raw_val * scale
+                self._meas['values'][key] = self.read_float_point(self._tags[key]["addr"])/value["div"]
+            if value["tipo"] == '4X':
+                self._meas['values'][key] = self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"]
 
     def read_float_point(self, endereco):
         with self._lock:
@@ -126,7 +121,9 @@ class MainWidget(BoxLayout):
             self.ids.Temperatura.text = f"{round(self._meas['values']['Temperatura'],2)} °C"
         
         if 'Corrente_media' in self.ids:
-            self.ids.Corrente_media.text = f"{round(self._meas['values']['Corrente_media'],2)} A"
+            val = round(self._meas['values']['Corrente_media'], 2)
+            unit = self._tags['Corrente_media'].get('unit', '')
+            self.ids.Corrente_media.text = f"{val} {unit}"
 
         # Atualização do nível do termômetro
         self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura']/45*self.ids.termometro.size[1])
@@ -137,12 +134,20 @@ class MainWidget(BoxLayout):
 
     def set_graph_variable(self, var_name, y_label):
         self._selected_tag = var_name
+
+        # Ajustar o eixo Y com base no que está definido no dicionário
+        ymin = self._tags[var_name].get('ymin', 0)
+        ymax = self._tags[var_name].get('ymax', 10)
+        self._graph.ids.graph.ymin = ymin
+        self._graph.ids.graph.ymax = ymax
+
+        # Ajustar o rótulo do eixo
         self._graph.ids.graph.ylabel = y_label
 
-        # Limpa o gráfico e cria um novo plot com a cor da variável selecionada
+        # Limpa e adiciona o novo plot
         self._graph.ids.graph.clearPlots()
         new_plot = LinePlot(line_width=1.5, color=self._tags[var_name]['color'])
-        self._graph.plot = new_plot  # guarda a referência se precisar depois
+        self._graph.plot = new_plot
         self._graph.ids.graph.add_plot(new_plot)
 
 
