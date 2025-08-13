@@ -126,7 +126,7 @@ class MainWidget(BoxLayout):
             self.ids.Temperatura.text = f"{round(self._meas['values']['Temperatura'],2)} °C"
         
         if 'Corrente_media' in self.ids:
-            self.ids.Corrente_media.text = f"{round(self._meas['values']['Corrente_media'],2)} mA"
+            self.ids.Corrente_media.text = f"{round(self._meas['values']['Corrente_media'],2)} A"
 
         # Atualização do nível do termômetro
         self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura']/45*self.ids.termometro.size[1])
