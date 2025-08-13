@@ -87,9 +87,9 @@ class MainWidget(BoxLayout):
         self._meas['timestamp'] = datetime.now()
         for key,value in self._tags.items():
             if value["tipo"] == 'FP':
-                self._meas['values'][key] = self.read_float_point(self._tags[key]["addr"])
+                self._meas['values'][key] = round(self.read_float_point(self._tags[key]["addr"])/value["div"], 2)
             if value["tipo"] == '4X':
-                self._meas['values'][key] = self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"]
+                self._meas['values'][key] = round(self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"],2)
 
     def read_float_point(self, endereco):
         with self._lock:
@@ -104,28 +104,28 @@ class MainWidget(BoxLayout):
         """
         # Atualização das labels específicas
         if 'Velocidade_saida_ar' in self.ids:
-            self.ids.Velocidade_saida_ar.text = f"{round(self._meas['values']['Velocidade_saida_ar'],2)}"
+            self.ids.Velocidade_saida_ar.text = f"{self._meas['values']['Velocidade_saida_ar']/self._tags['Velocidade_saida_ar']['div']}"
         
         if 'Vazao_saida_ar' in self.ids:
-            self.ids.Vazao_saida_ar.text = f"{round(self._meas['values']['Vazao_saida_ar'],2)}"
+            self.ids.Vazao_saida_ar.text = f"{self._meas['values']['Vazao_saida_ar']/self._tags['Vazao_saida_ar']["div"]}"
         
         if 'Temperatura' in self.ids:
-            self.ids.Temperatura.text = f"{round(self._meas['values']['Temperatura_saida'],2)} °C"
+            self.ids.Temperatura.text = f"{self._meas['values']['Temperatura_saida']} °C"
 
         if 'pit01' in self.ids:
-            self.ids.pit01.text = f"{round(self._meas['values']['ve.pit'],2)}"
+            self.ids.pit01.text = f"{self._meas['values']['ve.pit01']}"
         
         if 'pit02' in self.ids:
-            self.ids.pit02.text = f"{round(self._meas['values']['ve.pit'],2)}"
+            self.ids.pit02.text = f"{self._meas['values']['ve.pit02']}"
 
         if 'pit03' in self.ids:
-            self.ids.pit03.text = f"{round(self._meas['values']['ve.pit'],2)}"
+            self.ids.pit03.text = f"{self._meas['values']['ve.pit03']}"
         
         if 'tit01' in self.ids:
-            self.ids.tit01.text = f"{round(self._meas['values']['ve.pit'],2)}"
+            self.ids.tit01.text = f"{self._meas['values']['ve.tit01']}"
         
         if 'tit02' in self.ids:
-            self.ids.tit02.text = f"{round(self._meas['values']['ve.pit'],2)}"
+            self.ids.tit02.text = f"{self._meas['values']['ve.tit02']}"
 
         # Atualização das labels do popup Leituras
         for key,value in self._tags.items():
@@ -138,7 +138,7 @@ class MainWidget(BoxLayout):
         self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura_saida']/45*self.ids.termometro.size[1])
 
         # Atualização do widget de vazão
-        self.ids.lb_vazao.size = (self.ids.lb_vazao.size[0],self._meas['values']['Vazao_saida_ar']/45*self.ids.vazao.size[1])
+        self.ids.lb_vazao.size = (self._meas['values']['Vazao_saida_ar']/1000*self.ids.lb_vazao.size[0],self.ids.vazao.size[1])
 
         # Atualização do gráfico    
         self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura_saida']),0)

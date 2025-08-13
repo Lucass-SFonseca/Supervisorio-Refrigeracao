@@ -22,9 +22,9 @@ class MainApp(App):
             'corrente_T': {'addr': 842, 'tipo': '4X', 'l/e': 'l', 'div': 10, 'valor': 1, 'unid': 'A'},
             'corrente_N': {'addr': 843, 'tipo': '4X', 'l/e': 'l', 'div': 10, 'valor': 1, 'unid': 'A'},
             'corrente_media': {'addr': 845, 'tipo': '4X', 'l/e': 'l', 'div': 10, 'valor': 1, 'unid': 'A'},
-            'tensao_RS': {'addr': 804, 'tipo': '4X', 'l/e': 'l', 'div': 10, 'unid': 'V'},
-            'tensao_ST': {'addr': 805, 'tipo': '4X', 'l/e': 'l', 'div': 10, 'unid': 'V'},
-            'tensao_TR': {'addr': 806, 'tipo': '4X', 'l/e': 'l', 'div': 10, 'unid': 'V'},
+            'tensao_RS': {'addr': 847, 'tipo': '4X', 'l/e': 'l', 'div': 10, 'unid': 'V'},
+            'tensao_ST': {'addr': 848, 'tipo': '4X', 'l/e': 'l', 'div': 10, 'unid': 'V'},
+            'tensao_TR': {'addr': 849, 'tipo': '4X', 'l/e': 'l', 'div': 10, 'unid': 'V'},
             'potencia_aparente_total': {'addr': 863, 'tipo': '4X', 'l/e': 'l', 'div': 1, 'unid': 'VA'},
             'potencia_aparente_r': {'addr': 860, 'tipo': '4X', 'l/e': 'l', 'div': 1, 'unid': 'VA'},
             'potencia_aparente_s': {'addr': 861, 'tipo': '4X', 'l/e': 'l', 'div': 1, 'unid': 'VA'},
@@ -46,7 +46,8 @@ class MainApp(App):
             've.tit01': {'addr': 1220, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': '°C'},
             've.pit01': {'addr': 1222, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'PSI'},
             've.pit02': {'addr': 1224, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'PSI'},
-            've.pit03': {'addr': 1226, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'mmH2O'}
+            've.pit03': {'addr': 1226, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'mmH2O'},
+            've.nv_escreve': {'addr': 1310, 'tipo': 'FP', 'l/e': 'l/e', 'div': 1, 'unid': '%'}
         }
         )
 

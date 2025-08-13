@@ -66,7 +66,7 @@
         Label:
             id: lb_vazao
             size_hint: (None,None)
-            size: (vazao.size[0]*0.25, vazao.size[1])
+            size: (vazao.size[0], vazao.size[1]*0.25)
             pos_hint: {'x':0.78,'y':0.57}
             canvas:
                 Color:
@@ -82,13 +82,13 @@
 
         Image:
             id: aquecedor1
-            source: 'imgs/aquecedor.jpg'
+            source: 'imgs/aquecedor_off.jpg'
             size_hint: 0.13,0.13
             pos_hint: {'x':0.485,'y':0.617}
 
         Image:
             id: aquecedor2
-            source: 'imgs/aquecedor.jpg'
+            source: 'imgs/aquecedor_off.jpg'
             size_hint: 0.13,0.13
             pos_hint: {'x':0.7,'y':0.617}
 
@@ -119,7 +119,8 @@
             background_normal: 'imgs/icone_mot_off.jpg'
             background_down: 'imgs/icone_mot_off.jpg'
             pos_hint: {'x':0.068,'y':0.62}
-            on_release: root.alterna_motor()
+            on_release: 
+                root.alterna_motor()
 
         Button:
             id: btn_soft
