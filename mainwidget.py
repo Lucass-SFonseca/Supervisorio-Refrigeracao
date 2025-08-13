@@ -135,20 +135,30 @@ class MainWidget(BoxLayout):
     def set_graph_variable(self, var_name, y_label):
         self._selected_tag = var_name
 
-        # Ajustar o eixo Y com base no que está definido no dicionário
+        # Obtém limites
         ymin = self._tags[var_name].get('ymin', 0)
-        ymax = self._tags[var_name].get('ymax', 10)
+        ymax = self._tags[var_name].get('ymax', 50)
+
+        # Configura limites no gráfico
         self._graph.ids.graph.ymin = ymin
         self._graph.ids.graph.ymax = ymax
 
-        # Ajustar o rótulo do eixo
+        # Ajusta espaçamento vertical
+        self._graph.ids.graph.y_ticks_major = ymax / 10
+
+        # Mantém padding fixo para evitar achatamento
+        self._graph.ids.graph.padding = 5
+
+        # Ajusta rótulo
         self._graph.ids.graph.ylabel = y_label
 
-        # Limpa e adiciona o novo plot
+        # Limpa e adiciona novo plot
         self._graph.ids.graph.clearPlots()
         new_plot = LinePlot(line_width=1.5, color=self._tags[var_name]['color'])
         self._graph.plot = new_plot
         self._graph.ids.graph.add_plot(new_plot)
+
+
 
 
     def stopRefresh(self):
