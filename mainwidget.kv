@@ -97,7 +97,7 @@
         Button:
             id: graficos
             size_hint: (None, None)
-            size: (0.85*62,0.85*58)
+            size: (62,58)
             background_normal: 'imgs/graph_icon.jpg'
             background_down: 'imgs/graph_icon.jpg'
             pos_hint: {'x':0.02,'y':0.90}
@@ -106,22 +106,32 @@
         Button:
             id: leituras
             size_hint: (None, None)
-            size: (0.85*62,0.85*58)
+            size: (62,58)
             background_normal: 'imgs/icone_leitura.jpg'
             background_down: 'imgs/icone_leitura.jpg'
-            pos_hint: {'x':0.14,'y':0.90}
+            pos_hint: {'x':0.02,'y':0.80}
             on_release:
                 root._leitura.open()
 
         Button:
             id: ctrl_temp
             size_hint: (None, None)
-            size: (0.85*62,0.85*58)
+            size: (62,58)
             background_normal: 'imgs/atuacao.jpg'
             background_down: 'imgs/atuacao.jpg'
-            pos_hint: {'x':0.08,'y':0.90}
+            pos_hint: {'x':0.09,'y':0.90}
             on_release:
                 root._atuacao.open()
+            
+        Button:
+            id: bd
+            size_hint: (None, None)
+            size: (62,58)
+            background_normal: 'imgs/icone_BD.jpg'
+            background_down: 'imgs/icone_BD.jpg'
+            pos_hint: {'x':0.09,'y':0.80}
+            on_release:
+                root._hgraph.open()
 
         Button:
             id: botao_toggle
@@ -165,7 +175,51 @@
             on_release: 
                 print('Modo de partida: Direta')
                 root.selecionarPartida(3)
-            
+
+        TextInput:
+            id: ron_label
+            text: "0"
+            multiline: False
+            input_filter: "int"
+            size_hint: (None, None)
+            height: 30
+            width: 35
+            pos_hint: {"x": 0.05, "y": 0.5}
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+            background_normal: ""     # remove a textura padrão
+            background_active: ""     # idem para quando selecionado
+            background_color: (1, 1, 1, 0)
+            foreground_color: (0, 0, 0, 1)        # cor do texto
+            cursor_color: (0, 0, 0, 1)            # cor do cursor
+            on_text_validate:
+                print("Definindo rampa de subida em: ", self.text)
+                self._modbusClient.write_single_register(1314, int(self.ids.roff_label.text/10))
+                self._modbusClient.write_single_register(1317, int(self.ids.roff_label.text))
+
+        TextInput:
+            id: roff_label
+            text: "0"
+            multiline: False
+            input_filter: "int"
+            size_hint: (None, None)
+            height: 30
+            width: 35
+            pos_hint: {"x": 0.125, "y": 0.5}
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+            background_normal: ""     # remove a textura padrão
+            background_active: ""     # idem para quando selecionado
+            background_color: (1, 1, 1, 0)
+            foreground_color: (0, 0, 0, 1)        # cor do texto
+            cursor_color: (0, 0, 0, 1)            # cor do cursor
+            on_text_validate:
+                print("Definindo rampa de descida em: ", self.text) 
+                self._modbusClient.write_single_register(1315, int(self.ids.roff_label.text/10))
+                self._modbusClient.write_single_register(1318, int(self.ids.roff_label.text))
+
         Slider:
             id: my_slider
             min: 0
@@ -202,13 +256,6 @@
             cursor_color: (0, 0, 0, 1)            # cor do cursor
             on_text_validate: 
                 if self.text.isdigit(): my_slider.value = int(self.text)
-
-        Button:
-            text: "Dados Históricos"
-            pos_hint:{'right':1,'down':1}
-            size_hint:(0.2,0.05)
-            on_release: 
-                root._hgraph.open()
 
 
         TempLabel:
