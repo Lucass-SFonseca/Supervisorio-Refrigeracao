@@ -45,11 +45,8 @@ class Leitura(Popup):
     """
     Popup de apresentação das leituras em tempo real
     """
-    def _init_(self, **kwargs):
-       """
-       Construtor da classe
-       """
-       super()._init_(**kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 class LabeledCheckBoxDataGraph(BoxLayout):
     pass
@@ -62,14 +59,31 @@ class DataGraphPopup(Popup):
         self.ids.graph.xmax = xmax
 
 class HistGraphPopup(Popup):
+    # whitelist das 4 medidas
+    ALLOWED = {
+        'Temperatura_saida',
+        'Velocidade_saida_ar',
+        'potencia_ativa_total',  # mude para 'potencia_aparente_total' se preferir
+        'corrente_media'
+    }
+    # nomes amigáveis
+    LABELS = {
+        'Temperatura_saida': 'Temperatura de saída',
+        'Velocidade_saida_ar': 'Velocidade de saída de ar',
+        'potencia_ativa_total': 'Potência total',
+        'corrente_media': 'Corrente média'
+    }
+
     def __init__(self, **kwargs):
-        super().__init__()
-        for key, value in kwargs.get('tags').items():
-            cb = LabeledCheckBoxHistGraph()
-            cb.ids.label.text = key
-            cb.ids.label.color = value['color']
-            cb.id = key
-            self.ids.sensores.add_widget(cb)
+        tags = kwargs.pop("tags", {})
+        super().__init__(**kwargs)
+        for key, value in tags.items():
+            if key in self.ALLOWED:
+                cb = LabeledCheckBoxHistGraph()
+                cb.ids.label.text = self.LABELS.get(key, key)
+                cb.ids.label.color = value['color']
+                cb.id = key
+                self.ids.sensores.add_widget(cb)
             
 
 class LabeledCheckBoxHistGraph(BoxLayout):

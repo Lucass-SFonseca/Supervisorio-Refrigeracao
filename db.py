@@ -26,6 +26,23 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 # Classe base para os modelos
 Base = declarative_base()
 
+class Measurement(Base):
+    """
+    Modelo genérico para guardar medições do CLP.
+    Coluna 'data' guarda todas as tags lidas em formato JSON.
+    """
+    __tablename__ = "measurements"
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(DateTime, index=True)
+    data = Column(Text)  # JSON string com todas as tags
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "timestamp": self.timestamp,
+            "data": json.loads(self.data)
+        }
+
 # Cria as tabelas no banco, caso não existam
 Base.metadata.create_all(engine)
 
@@ -69,9 +86,10 @@ class DBWriter:
         finally:
             session.close()
 
-    def get_tag_series(self, tag: str, start: datetime = None, end: datetime = None, limit: int = None):
+    def get_tags_series(self, tags, start: datetime = None, end: datetime = None, limit: int = None):
         """
-        Retorna uma lista de (timestamp, valor) para uma tag específica.
+        Retorna um dicionário com listas alinhadas por timestamp para várias tags.
+        out = {'timestamp': [..], 'tag1': [..], 'tag2': [..], ...}
         """
         session = SessionLocal()
         try:
@@ -83,31 +101,16 @@ class DBWriter:
                 q = q.limit(limit)
 
             rows = q.all()
-            series = []
+            out = {t: [] for t in tags}
+            ts = []
             for r in rows:
-                data = json.loads(r.data)
-                if tag in data:
-                    series.append((r.timestamp, data[tag]))
-            return series
+                payload = json.loads(r.data)
+                ts.append(r.timestamp)
+                for t in tags:
+                    out[t].append(payload.get(t))
+            out['timestamp'] = ts
+            return out
         finally:
             session.close()
     
         
-                       
-class Measurement(Base):
-    """
-    Modelo genérico para guardar medições do CLP.
-    Coluna 'data' guarda todas as tags lidas em formato JSON.
-    """
-    __tablename__ = "measurements"
-    id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, index=True)
-    data = Column(Text)  # JSON string com todas as tags
-
-    def as_dict(self):
-        return {
-            "id": self.id,
-            "timestamp": self.timestamp,
-            "data": json.loads(self.data)
-        }
-

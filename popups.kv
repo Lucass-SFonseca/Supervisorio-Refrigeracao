@@ -351,14 +351,22 @@
                 size_hint: (0.2, 1)
                 on_release: root.dismiss()
 
+<TempPopLabel@Label>:
+    text: "-.-"
+    halign: 'center'
+    color: (0.1,0.1,0.1,1)
+    font_size: 16
+
 <LabeledCheckBoxHistGraph>:
     orientation: 'horizontal'
     size_hint: (0.05, 1)
     CheckBox:
         id: checkbox
-        on_active: None
+        on_active: app.root.getDataDB()
     Label:
         id: label
+        font_size: 12
+        bold: True
 
 <HistGraphPopup>:
     title: "Històrico de temperatura na Saida"
@@ -409,6 +417,6 @@
                 multiline: False
             Button:
                 text: "Fechar"
-                size_hint: (0.2, 1)
+                size_hint: (1,0.1)
                 on_release: root.dismiss()
 

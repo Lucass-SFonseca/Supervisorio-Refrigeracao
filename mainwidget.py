@@ -1,7 +1,8 @@
 from kivy.uix.boxlayout import BoxLayout
-from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup, HistGraphPopup
+from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup, HistGraphPopup, LabeledCheckBoxHistGraph
 from pyModbusTCP.client import ModbusClient
 from kivy.core.window import Window
+from kivy_garden.graph import LinePlot
 from threading import Thread, Lock
 from time import sleep
 from datetime import datetime
@@ -47,7 +48,9 @@ class MainWidget(BoxLayout):
             self._tags[key]['color'] = plot_color
 
         self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura_saida']['color'])
-    
+        self._hgraph = HistGraphPopup(tags=self._tags)
+
+        
     def startDataRead(self, ip, port):
         self._serverIP = ip
         self._serverPort = port
@@ -77,10 +80,13 @@ class MainWidget(BoxLayout):
             while self._updateWidgets:
                 self.readData()
                 self.updateGUI()
+                mid = self._db.save_measurement(self._meas['timestamp'], self._meas['values'])
+                if mid:
+                    print(f"[DB] Medição salva ID={mid} em {self._meas['timestamp']}")
                 sleep(self._scan_time/1000)
         except Exception as e:
             self._modbusClient.close()
-            print("Erro: ",e.args)
+            print("Erro: ", e.args)
 
     def readData(self):
         self._meas['timestamp'] = datetime.now()
@@ -90,11 +96,6 @@ class MainWidget(BoxLayout):
             if value["tipo"] == '4X':
                 self._meas['values'][key] = round(self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"],2)
 
-        # salva no banco sem bloquear o restante (é rápido). Captura exceção para não quebrar o loop.
-        try:
-            self._db.save_measurement(self._meas['timestamp'], self._meas['values'])
-        except Exception as e:
-            print("Erro ao persistir leitura:", e)
 
     def read_float_point(self, endereco):
         with self._lock:
@@ -112,7 +113,7 @@ class MainWidget(BoxLayout):
             self.ids.Velocidade_saida_ar.text = f"{self._meas['values']['Velocidade_saida_ar']/self._tags['Velocidade_saida_ar']['div']}"
         
         if 'Vazao_saida_ar' in self.ids:
-            self.ids.Vazao_saida_ar.text = f"{self._meas['values']['Vazao_saida_ar']/self._tags['Vazao_saida_ar']["div"]}"
+            self.ids.Vazao_saida_ar.text = f"{self._meas['values']['Vazao_saida_ar']/self._tags['Vazao_saida_ar']['div']}"
         
         if 'Temperatura' in self.ids:
             self.ids.Temperatura.text = f"{self._meas['values']['Temperatura_saida']} °C"
@@ -150,6 +151,54 @@ class MainWidget(BoxLayout):
 
     def stopRefresh(self):
         self._updateWidgets = False
+    
+    def getDataDB(self):
+        """ 
+        Coleta os parâmetros do popup e desenha o histórico das tags selecionadas
+        """
+        print("DEBUG sensores children:")
+        for w in self._hgraph.ids.sensores.children:
+            print(" -", type(w), getattr(w, "ids", None))
+
+        try:
+            init_t = self.parseDTString(self._hgraph.ids.txt_init_time.text)
+            final_t = self.parseDTString(self._hgraph.ids.txt_final_time.text)
+            selected = []
+            for w in self._hgraph.ids.sensores.children:
+                if w.ids["checkbox"].active:
+                    selected.append(w.id)
+
+
+            dados = self._db.get_tag_series(selected, init_t, final_t)
+            print("DEBUG histórico:", dados)
+
+            if not dados or len(dados.get('timestamp', [])) == 0:
+                return
+            self._hgraph.ids.graph.clearPlots()
+            
+            for key in selected:
+                p = LinePlot(line_width=1.5, color=self._tags[key]['color'])
+                p.points = [(i, v) for i, v in enumerate(dados[key])]
+                self._hgraph.ids.graph.add_plot(p)
+
+            self._hgraph.ids.graph.xmax = len(dados['timestamp'])
+            # update_x_labels aceita datetime; ótimo para formatar HH:MM:SS
+            self._hgraph.ids.graph.update_x_labels(dados['timestamp'])
+
+        except Exception as e:
+            print("Erro ", e.args)
+            
+    def parseDTString(self, datetime_str):
+        """ 
+        Método que converte a string inserida pelo usuário para o formato utilizado
+        na busca de dados do DB
+        """
+        try:
+            d=datetime.strptime(datetime_str,'%d/%m/%Y %H:%M:%S')
+            return d.strftime("%Y-%m-%d %H:%M:%S")
+        except Exception as e:
+            print("Erro ", e.args)
+            
 
     def selecionar_partida(self, tipo):
         self.tipo_partida = tipo
