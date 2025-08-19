@@ -1,8 +1,12 @@
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
+from kivy.uix.button import Button
 from kivy_garden.graph import LinePlot
 from kivy.uix.boxlayout import BoxLayout
-
+from datetime import datetime
+from db import DBWriter
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.gridlayout import GridLayout
 
 class ModbusPopup(Popup):
     """
@@ -56,3 +60,17 @@ class DataGraphPopup(Popup):
         self.plot = LinePlot(line_width=1.5, color=plot_color)
         self.ids.graph.add_plot(self.plot)
         self.ids.graph.xmax = xmax
+
+class HistGraphPopup(Popup):
+    def __init__(self, **kwargs):
+        super().__init__()
+        for key, value in kwargs.get('tags').items():
+            cb = LabeledCheckBoxHistGraph()
+            cb.ids.label.text = key
+            cb.ids.label.color = value['color']
+            cb.id = key
+            self.ids.sensores.add_widget(cb)
+            
+
+class LabeledCheckBoxHistGraph(BoxLayout):
+    pass

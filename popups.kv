@@ -351,8 +351,64 @@
                 size_hint: (0.2, 1)
                 on_release: root.dismiss()
 
-<TempPopLabel@Label>:
-    text: "-.-"
-    halign: 'center'
-    color: (0.1,0.1,0.1,1)
-    font_size: 16
+<LabeledCheckBoxHistGraph>:
+    orientation: 'horizontal'
+    size_hint: (0.05, 1)
+    CheckBox:
+        id: checkbox
+        on_active: None
+    Label:
+        id: label
+
+<HistGraphPopup>:
+    title: "Històrico de temperatura na Saida"
+    BoxLayout:
+        orientation: 'vertical'
+        TimeSeriesGraph:
+            id: graph
+            xlabel: 'Horário'
+            ylabel: 'Temperatura [°C]'
+            background_color: 0.5, 0.5, 0.5, 0.5
+            x_ticks_minor: 1
+            x_ticks_major: 5
+            y_ticks_major: 5
+            y_grid_label: True
+            x_grid_label: True
+            padding: 5
+            x_grid: True
+            y_grid: True
+            xmin: 0
+            ymin: 0
+            ymax: 50
+        BoxLayout:
+            id: sensores
+            orientation: 'horizontal'
+            size_hint: (1,0.1)
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1, 0.1)
+            Label:
+                text: 'Timestamp inicial \r\n [size=12] (DD/MM/AAAA HH:MM:SS) [/size]'
+                halign: 'center'
+                markup: True
+            TextInput:
+                id: text_init_time
+                size_hint: (1,0.8)
+                halign: 'center'
+                valign: 'middle'
+                multiline: False
+            Label:
+                text: 'Timestamp final \r\n [size=12] (DD/MM/AAAA HH:MM:SS) [/size]'
+                halign: 'center'
+                markup: True
+            TextInput:
+                id: text_final_time
+                size_hint: (1,0.8)
+                halign: 'center'
+                valign: 'middle'
+                multiline: False
+            Button:
+                text: "Fechar"
+                size_hint: (0.2, 1)
+                on_release: root.dismiss()
+

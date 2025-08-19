@@ -8,6 +8,7 @@ from datetime import datetime
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 from pymodbus.constants import Endian
 from timeseriesgraph import TimeSeriesGraph
+from db import DBWriter
 import random
 
 class MainWidget(BoxLayout):
@@ -25,6 +26,7 @@ class MainWidget(BoxLayout):
         Construtor do widget principal
         """
         super().__init__()
+        self._db = DBWriter()
         self._scan_time = kwargs.get('scan_time')
         self._serverIP = kwargs.get('server_ip')
         self._serverPort = kwargs.get('server_port')
@@ -81,15 +83,18 @@ class MainWidget(BoxLayout):
             print("Erro: ",e.args)
 
     def readData(self):
-        """
-        Método para a leitura dos dados por meio do protocolo MODBUS
-        """
         self._meas['timestamp'] = datetime.now()
         for key,value in self._tags.items():
             if value["tipo"] == 'FP':
                 self._meas['values'][key] = round(self.read_float_point(self._tags[key]["addr"])/value["div"], 2)
             if value["tipo"] == '4X':
                 self._meas['values'][key] = round(self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"],2)
+
+        # salva no banco sem bloquear o restante (é rápido). Captura exceção para não quebrar o loop.
+        try:
+            self._db.save_measurement(self._meas['timestamp'], self._meas['values'])
+        except Exception as e:
+            print("Erro ao persistir leitura:", e)
 
     def read_float_point(self, endereco):
         with self._lock:
@@ -230,3 +235,4 @@ class MainWidget(BoxLayout):
             if self._modbusClient.read_holding_registers(1216,1)[0] == 2 and self._modbusClient.read_holding_registers(1312,1)[0] == 1:
                 self._modbusClient.write_single_register(1312,0)
                 pass
+    

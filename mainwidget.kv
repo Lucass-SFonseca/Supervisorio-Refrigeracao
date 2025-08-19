@@ -154,6 +154,14 @@
             on_release: 
                 print('Modo de partida: Direta')
                 root.selecionar_partida(3)
+        
+        Button:
+            text: "Dados Históricos"
+            pos_hint:{'right':1,'down':1}
+            size_hint:(0.2,0.05)
+            on_release: 
+                root._hgraph.open()
+
 
         TempLabel:
             id: Temperatura
