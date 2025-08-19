@@ -128,10 +128,11 @@
                 root.selecionar_partida(3)
         
         Button:
-            text: "Histórico"
-            size_hint_y: None
-            height: "40dp"
-            on_release: root.abrir_historico()
+            text: "Dados Históricos"
+            pos_hint:{'right':1,'down':1}
+            size_hint:(0.2,0.05)
+            on_release: 
+                root._hgraph.open()
 
 
         Label:

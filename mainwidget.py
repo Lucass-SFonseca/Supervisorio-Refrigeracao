@@ -1,5 +1,5 @@
 from kivy.uix.boxlayout import BoxLayout
-from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup, HistoricoPopup
+from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup, HistGraphPopup
 from pyModbusTCP.client import ModbusClient
 from kivy.core.window import Window
 from threading import Thread, Lock
@@ -8,7 +8,7 @@ from datetime import datetime
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 from pymodbus.constants import Endian
 from timeseriesgraph import TimeSeriesGraph
-from persistence import DBWriter
+from db import DBWriter
 import random
 
 class MainWidget(BoxLayout):
@@ -51,6 +51,7 @@ class MainWidget(BoxLayout):
 
         
         self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura']['color'])
+        self._hgraph = HistGraphPopup(tags=self._tags)
     
     def startDataRead(self, ip, port):
         self._serverIP = ip
@@ -215,5 +216,3 @@ class MainWidget(BoxLayout):
                 self._modbusClient.write_single_register(1312,0)
                 pass
     
-    def abrir_historico(self):
-        HistoricoPopup().open()
