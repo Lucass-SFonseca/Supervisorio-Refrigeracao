@@ -1,12 +1,12 @@
 from kivy.uix.boxlayout import BoxLayout
-from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup, HistGraphPopup, LabeledCheckBoxHistGraph
+from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup, HistGraphPopup, LabeledCheckBoxHistGraph, Atuacao
 from pyModbusTCP.client import ModbusClient
 from kivy.core.window import Window
 from kivy_garden.graph import LinePlot
 from threading import Thread, Lock
 from time import sleep
 from datetime import datetime
-from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
+from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.constants import Endian
 from timeseriesgraph import TimeSeriesGraph
 from db import DBWriter
@@ -39,6 +39,7 @@ class MainWidget(BoxLayout):
         self._meas['values']={}
         self._lock=Lock()
         self._leitura=Leitura()
+        self._atuacao=Atuacao()
         self.motor_ligado = False
         self.tipo_partida = 3
 
@@ -92,12 +93,11 @@ class MainWidget(BoxLayout):
         self._meas['timestamp'] = datetime.now()
         for key,value in self._tags.items():
             if value["tipo"] == 'FP':
-                self._meas['values'][key] = round(self.read_float_point(self._tags[key]["addr"])/value["div"], 2)
+                self._meas['values'][key] = round(self.readFloatPoint(self._tags[key]["addr"])/value["div"], 2)
             if value["tipo"] == '4X':
                 self._meas['values'][key] = round(self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"],2)
 
-
-    def read_float_point(self, endereco):
+    def readFloatPoint(self, endereco):
         with self._lock:
             leitura = self._modbusClient.read_holding_registers(endereco,2)
             decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
@@ -144,7 +144,7 @@ class MainWidget(BoxLayout):
         self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura_saida']/45*self.ids.termometro.size[1])
 
         # Atualização do widget de vazão
-        self.ids.lb_vazao.size = (self._meas['values']['Vazao_saida_ar']/1000*self.ids.lb_vazao.size[0],self.ids.vazao.size[1])
+        self.ids.lb_vazao.size = (self.ids.vazao.size[0] * self._meas['values']['Vazao_saida_ar'] / 1000, self.ids.vazao.size[1])
 
         # Atualização do gráfico    
         self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura_saida']),0)
@@ -200,7 +200,7 @@ class MainWidget(BoxLayout):
             print("Erro ", e.args)
             
 
-    def selecionar_partida(self, tipo):
+    def selecionarPartida(self, tipo):
         self.tipo_partida = tipo
 
         # Atualiza imagens dos botões
@@ -211,7 +211,7 @@ class MainWidget(BoxLayout):
         with self._lock:
             self._modbusClient.write_single_register(1324,tipo)
 
-    def alterna_motor(self):
+    def alternaMotor(self):
         if self.motor_ligado:
             self.desligar()
             self.ids.botao_toggle.background_normal = "imgs/icone_mot_off.jpg"
@@ -223,21 +223,21 @@ class MainWidget(BoxLayout):
 
     def ligar(self):
         if self.tipo_partida == 1:
-            self.liga_soft()
+            self.ligaSoft()
         elif self.tipo_partida == 2:
-            self.liga_inversor()
+            self.ligaInversor()
         elif self.tipo_partida == 3:
-            self.liga_direta()
+            self.ligaDireta()
 
     def desligar(self):
         if self.tipo_partida == 1:
-            self.desliga_soft()
+            self.desligaSoft()
         elif self.tipo_partida == 2:
-            self.desliga_inversor()
+            self.desligaInversor()
         elif self.tipo_partida == 3:
-            self.desliga_direta()
+            self.desligaDireta()
 
-    def liga_direta(self):
+    def ligaDireta(self):
 
         with self._lock:
 
@@ -245,7 +245,7 @@ class MainWidget(BoxLayout):
                 self._modbusClient.write_single_register(1319,1)
                 pass
 
-    def desliga_direta(self):
+    def desligaDireta(self):
 
         with self._lock:
 
@@ -253,7 +253,7 @@ class MainWidget(BoxLayout):
                 self._modbusClient.write_single_register(1319,0)
                 pass
 
-    def liga_soft(self):
+    def ligaSoft(self):
 
         with self._lock:
 
@@ -261,7 +261,7 @@ class MainWidget(BoxLayout):
                 self._modbusClient.write_single_register(1316,1)
                 pass
 
-    def desliga_soft(self):
+    def desligaSoft(self):
 
         with self._lock:
 
@@ -269,7 +269,7 @@ class MainWidget(BoxLayout):
                 self._modbusClient.write_single_register(1316,0)
                 pass
 
-    def liga_inversor(self):
+    def ligaInversor(self):
 
         with self._lock:
 
@@ -277,11 +277,16 @@ class MainWidget(BoxLayout):
                 self._modbusClient.write_single_register(1312,1)
                 pass
 
-    def desliga_inversor(self):
+    def desligaInversor(self):
 
         with self._lock:
 
             if self._modbusClient.read_holding_registers(1216,1)[0] == 2 and self._modbusClient.read_holding_registers(1312,1)[0] == 1:
                 self._modbusClient.write_single_register(1312,0)
                 pass
-    
+
+    def variaFrequenciaMotor(self, *args):
+        with self._lock:
+            self._modbusClient.write_single_register(1313,args[1]/10)
+            print("frequencia definida em: ", args[1]/10)
+            pass
