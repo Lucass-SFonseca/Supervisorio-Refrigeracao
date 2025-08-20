@@ -153,6 +153,7 @@ class MainWidget(BoxLayout):
         self._updateWidgets = False
     
     def getDataDB(self):
+        print("DEBUG: getDataDB foi chamada.")
         """ 
         Coleta os parâmetros do popup e desenha o histórico das tags selecionadas
         """
@@ -161,32 +162,48 @@ class MainWidget(BoxLayout):
             print(" -", type(w), getattr(w, "ids", None))
 
         try:
+            print(f"DEBUG: Valor de txt_init_time: {self._hgraph.ids.txt_init_time.text}")
+            print(f"DEBUG: Valor de txt_final_time: {self._hgraph.ids.txt_final_time.text}")
             init_t = self.parseDTString(self._hgraph.ids.txt_init_time.text)
             final_t = self.parseDTString(self._hgraph.ids.txt_final_time.text)
+            print(f"DEBUG: init_t formatado: {init_t}")
+            print(f"DEBUG: final_t formatado: {final_t}")
+
             selected = []
+            print("DEBUG: Iterando sobre checkboxes...")
             for w in self._hgraph.ids.sensores.children:
+                print(f"DEBUG: Checkbox encontrada: {w.id}, active: {w.ids['checkbox'].active}")
                 if w.ids["checkbox"].active:
                     selected.append(w.id)
+            print(f"DEBUG: Checkboxes selecionadas: {selected}")
 
+            dados = self._db.get_tags_series(selected, init_t, final_t)
+            print("DEBUG histórico (dados brutos):")
+            print(dados)
 
-            dados = self._db.get_tag_series(selected, init_t, final_t)
-            print("DEBUG histórico:", dados)
-
-            if not dados or len(dados.get('timestamp', [])) == 0:
+            if not dados or len(dados.get("timestamp", [])) == 0:
+                print("DEBUG: Nenhum dado retornado do DB ou timestamp vazio.")
                 return
             self._hgraph.ids.graph.clearPlots()
             
             for key in selected:
-                p = LinePlot(line_width=1.5, color=self._tags[key]['color'])
-                p.points = [(i, v) for i, v in enumerate(dados[key])]
+                print(f"DEBUG: Plotando {key} com dados: {dados[key]}")
+                p = LinePlot(line_width=1.5, color=self._tags[key]["color"])
+                # Certifique-se de que os dados são numéricos e que o enumerate está correto
+                # O problema pode estar aqui se os valores forem None ou não numéricos
+                valid_points = [(i, v) for i, v in enumerate(dados[key]) if v is not None]
+                p.points = valid_points
                 self._hgraph.ids.graph.add_plot(p)
 
-            self._hgraph.ids.graph.xmax = len(dados['timestamp'])
+            self._hgraph.ids.graph.xmax = len(dados["timestamp"])
             # update_x_labels aceita datetime; ótimo para formatar HH:MM:SS
-            self._hgraph.ids.graph.update_x_labels(dados['timestamp'])
+            self._hgraph.ids.graph.update_x_labels(dados["timestamp"])
+            print("DEBUG: Gráfico atualizado com sucesso.")
 
         except Exception as e:
-            print("Erro ", e.args)
+            import traceback
+            print("Erro na getDataDB:", e)
+            traceback.print_exc()
             
     def parseDTString(self, datetime_str):
         """ 

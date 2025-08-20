@@ -87,4 +87,5 @@ class HistGraphPopup(Popup):
             
 
 class LabeledCheckBoxHistGraph(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
