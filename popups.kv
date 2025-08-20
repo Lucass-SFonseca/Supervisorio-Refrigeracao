@@ -369,6 +369,118 @@
                         app.root.ids.aquecedor2.source = "imgs/aquecedor_off.jpg"
                         print("Aquecedor 2 desligado")
 
+        BoxLayout:
+            orientation: "vertical"
+            padding: 10
+            spacing: 10
+
+            # Faixa de título
+            Label:
+                text: "Controle dos Compressores"
+                size_hint_y: None
+                height: 40
+                bold: True
+                font_size: 20
+                color: (1,1,1,1)
+                canvas.before:
+                    Color:
+                        rgba: (0.1, 0.4, 0.7, 1)  # azul faixa
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: 50
+                spacing: 20
+            GridLayout:
+                cols: 2
+                rows: 2
+                spacing: 10
+                size_hint_y: None
+                height: 100
+
+                Button:
+                    text: "Scroll"
+                    on_press: 
+                        print("Compressor Sroll selecionado")
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    Label:
+                        text: "Frequência (Hz)"
+                        size_hint_y: None
+                        height: 50
+                    TextInput:
+                        font_size: 14
+                        halign: 'center'
+                        valign: 'middle'
+                        size_hint_y: None
+                        height: 40
+
+                Button:
+                    text: "Hermético"
+                    on_press: 
+                        print("Compressor Hermético selecionado")
+
+                BoxLayout:
+            
+        BoxLayout:
+            orientation: "vertical"
+            padding: 10
+            spacing: 10
+
+            # Faixa de título
+            Label:
+                text: "Controle de Temperatura"
+                size_hint_y: None
+                height: 40
+                bold: True
+                font_size: 20
+                color: (1,1,1,1)
+                canvas.before:
+                    Color:
+                        rgba: (0.1, 0.4, 0.7, 1)  # azul faixa
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: 50
+                spacing: 20
+            GridLayout:
+                cols: 2
+                rows: 2
+                spacing: 10
+                size_hint_y: None
+                height: 100
+
+                Button:
+                    text: "Liga"
+                    on_press: 
+                        print("Controle de temperatura ligado")
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    Label:
+                        text: "Temperatura ºC"
+                        size_hint_y: None
+                        height: 50
+                    TextInput:
+                        font_size: 14
+                        halign: 'center'
+                        valign: 'middle'
+                        size_hint_y: None
+                        height: 40
+
+                Button:
+                    text: "Desliga"
+                    on_press: 
+                        print("Controle de temperatura desligado")
+
+                BoxLayout:
+            
         
         
 <LabeledCheckBoxDataGraph>:
