@@ -50,7 +50,7 @@
             id: lb_temp
             size_hint: (None,None)
             size: (termometro.size[0]*0.25, termometro.size[1])
-            pos_hint: {'x':0.76,'y':0.50}
+            pos_hint: {'x':0.81,'y':0.35}
             canvas:
                 Color:
                     rgb: (0.678,0.847,0.902)
@@ -62,28 +62,76 @@
             source: 'imgs/termometro.png'
             size_hint: 0.17,0.17
             pos_hint: lb_temp.pos_hint
-        
+
+        Label:
+            id: lb_vazao
+            size_hint: (None,None)
+            size: (vazao.size[0], vazao.size[1])
+            pos_hint: {'x':0.81,'y':0.565}
+            canvas:
+                Color:
+                    rgb: (0.678,0.847,0.902)
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+        Image:
+            id: vazao
+            source: 'imgs/saida_de_ar.png'
+            size_hint: 0.23,0.23
+            size_hint: (None,None)
+            size: (180,170)
+            pos_hint: lb_vazao.pos_hint
+
+        Image:
+            id: aquecedor1
+            source: 'imgs/aquecedor_off.jpg'
+            size_hint: 0.13,0.13
+            pos_hint: {'x':0.485,'y':0.617}
+
+        Image:
+            id: aquecedor2
+            source: 'imgs/aquecedor_off.jpg'
+            size_hint: 0.13,0.13
+            pos_hint: {'x':0.7,'y':0.617}
+
         Button:
             id: graficos
             size_hint: (None, None)
-            size: (0.85*62,0.85*58)
+            size: (62,58)
             background_normal: 'imgs/graph_icon.jpg'
             background_down: 'imgs/graph_icon.jpg'
             pos_hint: {'x':0.02,'y':0.90}
             on_release:
                 root._graph.open()
-                print("Click gráficos")
         Button:
             id: leituras
             size_hint: (None, None)
-            size: (0.85*62,0.85*58)
+            size: (62,58)
             background_normal: 'imgs/icone_leitura.jpg'
             background_down: 'imgs/icone_leitura.jpg'
             pos_hint: {'x':0.02,'y':0.80}
-            on_release: 
+            on_release:
                 root._leitura.open()
-                print("Click leituras")
 
+        Button:
+            id: ctrl_temp
+            size_hint: (None, None)
+            size: (62,58)
+            background_normal: 'imgs/atuacao.jpg'
+            background_down: 'imgs/atuacao.jpg'
+            pos_hint: {'x':0.09,'y':0.90}
+            on_release:
+                root._atuacao.open()
+            
+        Button:
+            id: bd
+            size_hint: (None, None)
+            size: (62,58)
+            background_normal: 'imgs/icone_BD.jpg'
+            background_down: 'imgs/icone_BD.jpg'
+            pos_hint: {'x':0.09,'y':0.80}
+            on_release:
+                root.abrirHistorico()
 
         Button:
             id: botao_toggle
@@ -91,8 +139,9 @@
             size: (65,65)
             background_normal: 'imgs/icone_mot_off.jpg'
             background_down: 'imgs/icone_mot_off.jpg'
-            pos_hint: {'x':0.133,'y':0.55}
-            on_release: root.alterna_motor()
+            pos_hint: {'x':0.068,'y':0.62}
+            on_release: 
+                root.alternaMotor()
 
         Button:
             id: btn_soft
@@ -100,10 +149,10 @@
             size: (40,40)
             background_normal: 'imgs/botao_soft.jpg'
             background_down: 'imgs/botao_soft.jpg'
-            pos_hint: {'x':0.145,'y':0.48}
+            pos_hint: {'x':0.08,'y':0.55}
             on_release: 
                 print('Modo de partida: Soft start')
-                root.selecionar_partida(1)
+                root.selecionarPartida(1)
 
         Button:
             id: btn_inversor
@@ -111,10 +160,10 @@
             size: (40,40)
             background_normal: 'imgs/botao_inv.jpg'
             background_down: 'imgs/botao_inv.jpg'
-            pos_hint: {'x':0.19,'y':0.5}
+            pos_hint: {'x':0.125,'y':0.57}
             on_release: 
                 print('Modo de partida: Inversor')
-                root.selecionar_partida(2)
+                root.selecionarPartida(2)
 
         Button:
             id: btn_direta
@@ -122,34 +171,127 @@
             size: (40,40)
             background_normal: 'imgs/botao_direta.jpg'
             background_down: 'imgs/botao_direta.jpg'
-            pos_hint: {'x':0.1,'y':0.5}
+            pos_hint: {'x':0.035,'y':0.57}
             on_release: 
                 print('Modo de partida: Direta')
-                root.selecionar_partida(3)
+                root.selecionarPartida(3)
 
-        Label:
-            id: Velocidade_saida_ar
-            text: '-.- m/s'
-            font_size: 25
-            bold: True
-            halign: 'center'
-            pos_hint: {'x':0.01,'y': 0.42}
-            color: 0,0,0,1    
+        TextInput:
+            id: ron_label
+            text: "0"
+            multiline: False
+            input_filter: "int"
+            size_hint: (None, None)
+            height: 30
+            width: 35
+            pos_hint: {"x": 0.05, "y": 0.5}
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+            background_normal: ""     # remove a textura padrão
+            background_active: ""     # idem para quando selecionado
+            background_color: (1, 1, 1, 0)
+            foreground_color: (0, 0, 0, 1)        # cor do texto
+            cursor_color: (0, 0, 0, 1)            # cor do cursor
+            on_text_validate:
+                print("Definindo rampa de subida em: ", self.text)
+                root.defineRampa(1, self.text)
 
-        Label:
-            id: Vazao_saida_ar
-            text: '-.- m³/s'
-            font_size: 25
-            bold: True
-            halign: 'center'
-            pos_hint: {'x':0.01,'y': 0.36}
-            color: 0,0,0,1    
+        TextInput:
+            id: roff_label
+            text: "0"
+            multiline: False
+            input_filter: "int"
+            size_hint: (None, None)
+            height: 30
+            width: 35
+            pos_hint: {"x": 0.125, "y": 0.5}
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+            background_normal: ""     # remove a textura padrão
+            background_active: ""     # idem para quando selecionado
+            background_color: (1, 1, 1, 0)
+            foreground_color: (0, 0, 0, 1)        # cor do texto
+            cursor_color: (0, 0, 0, 1)            # cor do cursor
+            on_text_validate:
+                print("Definindo rampa de descida em: ", self.text) 
+                root.defineRampa(2, self.text)
 
-        Label:
+        Slider:
+            id: my_slider
+            min: 0
+            max: 60
+            step: 1
+            value: 0
+            orientation: "horizontal"
+            size_hint: (0.145, None)
+            height: 50
+            pos_hint: {"x": 0.045, "y": 0.44}
+            cursor_size: (20,20)
+            value_track: True
+            value_track_color: (0,0,0,1)
+            on_value: 
+                root.variaFrequenciaMotor(self.value)
+                slider_label.text = str(int(self.value))
+
+        TextInput:
+            id: slider_label
+            text: str(int(my_slider.value))
+            multiline: False
+            input_filter: "int"
+            size_hint: (None, None)
+            height: 30
+            width: 35
+            pos_hint: {"x": 0.02, "y": 0.455}
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+            background_normal: ""     # remove a textura padrão
+            background_active: ""     # idem para quando selecionado
+            background_color: (1, 1, 1, 1)
+            foreground_color: (0, 0, 0, 1)        # cor do texto
+            cursor_color: (0, 0, 0, 1)            # cor do cursor
+            on_text_validate: 
+                if self.text.isdigit(): my_slider.value = int(self.text)
+
+
+        TempLabel:
             id: Temperatura
             text: '-.- °C'
-            font_size: 25
-            bold: True
-            halign: 'center'
-            pos_hint: {'x':0.36,'y':0.22}
-            color: 0,0,0,1   
+            pos_hint: {'x':0.40,'y':-0.18}
+
+        TempLabel:
+            id: Velocidade_saida_ar
+            font_size: 18
+            pos_hint: {'x':0.343,'y': 0.377}
+
+        TempLabel:
+            id: Vazao_saida_ar
+            font_size: 18
+            pos_hint: {'x':0.413,'y': 0.377}
+
+        TempLabel:
+            id: pit01
+            pos_hint: {'x':-0.18,'y':-0.03}
+
+        TempLabel:
+            id: pit02
+            pos_hint: {'x':-0.07,'y':-0.03}
+
+        TempLabel:
+            id: pit03
+            pos_hint: {'x':-0.21,'y':0.41}
+        TempLabel:
+            id: tit01
+            pos_hint: {'x':0.01,'y':-0.09}
+        TempLabel:
+            id: tit02
+            pos_hint: {'x':0.01,'y':-0.225}
+
+<TempLabel@Label>:
+    text: '-.-'
+    font_size: 22
+    bold: True
+    halign: 'center'
+    color: 0,0,0,1

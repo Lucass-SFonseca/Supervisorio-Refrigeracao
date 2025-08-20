@@ -81,124 +81,409 @@
                     root.dismiss()
 
 <Leitura>:
-    title: "leitura"
-    size_hint_y: None
-    size_hint_x: None
-    height: 600
-    width: 400
+    title: "LEITURA DE DADOS"
     BoxLayout:
-        id: layout
         orientation: 'vertical'
-        GridLayout:
-            cols: 2
-            rows: 10
-            Label:
-                text: "Média demanda"
-                font_size: 14
-            Label:
-                id: Med_demanda
-                text: "0.03"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            
-            Label:
-                text: "Temperatura"
-                font_size: 14
-            Label:
-                id: Temperatura
-                text: "26 °C"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            
-            Label:
-                text: "Velocidade do Compressor"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "0 m/s"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            
-            Label:
-                text: "Temperatura Baixa"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "0"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'            
-            
-            Label:
-                text: "Corrente Média"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "10 A"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            Label:
-                text: "DDp Fases"
-                font_size: 14
-            Label:
-                id: txt_ip
-                text: "220 V"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            
-            Label:
-                text: "Temp Rolamento"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "75°C"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            
-            Label:
-                text: "Corrente Compressor"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "20 A"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
-            
-            Label:
-                text: "Potência Ativa"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "1500 W"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'            
-            
-            Label:
-                text: "Fator de Potência"
-                font_size: 14
-            Label:
-                id: txt_porta
-                text: "0.85"
-                font_size: 14
-                halign: 'center'
-                valign: 'middle'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1,0.1)
+            canvas.before:
+                Color:
+                    rgb: 0.9,0.9,0.9
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            TempPopLabel:
+                bold: True
+                text: "Rotação:"
+            TempPopLabel:
+                id: rot_motor
+            TempPopLabel:
+                bold: True
+                text: "Torque:"
+            TempPopLabel:
+                id: torque_motor
 
-            Button:
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1,0.01)
+
+        GridLayout:
+            rows: 3
+            cols: 2
+            spacing: 5
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgb: 0.9,0.9,0.9
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                rows: 5
+                cols: 2
+                TempPopLabel:
+                    text: "Temperatura (ºC)"
+                    bold: True
+                BoxLayout:
+                TempPopLabel:
+                    text: "Enrolamento R"
+                TempPopLabel:
+                    id: temp_enrolamento_R_motor
+                TempPopLabel:
+                    text: "Enrolamento S"
+                TempPopLabel:
+                    id: temp_enrolamento_S_motor
+                TempPopLabel:
+                    text: "Enrolamento T"
+                TempPopLabel:
+                    id: temp_enrolamento_T_motor
+                TempPopLabel:
+                    text: "Carcaça"
+                TempPopLabel:
+                    id: temperatura_carcaca
+
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgb: 0.9,0.9,0.9
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                rows: 5
+                cols: 2
+                TempPopLabel:
+                    text: "Potencia Aparente (VA)"
+                    bold: True
+                BoxLayout:
+                TempPopLabel:
+                    text: "Enrolamento R"
+                TempPopLabel:
+                    id: potencia_aparente_r
+                TempPopLabel:
+                    text: "Enrolamento S"
+                TempPopLabel:
+                    id: potencia_aparente_s
+                TempPopLabel:
+                    text: "Enrolamento T"
+                TempPopLabel:
+                    id: potencia_aparente_t
+                TempPopLabel:
+                    text: "Total"
+                TempPopLabel:
+                    id: potencia_aparente_total
+
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgb: 0.9,0.9,0.9
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                rows: 5
+                cols: 2
+                TempPopLabel:
+                    text: "Corrente (A)"
+                    bold: True
+                BoxLayout:
+                TempPopLabel:
+                    text: "Enrolamento R"
+                TempPopLabel:
+                    id: corrente_R
+                TempPopLabel:
+                    text: "Enrolamento S"
+                TempPopLabel:
+                    id: corrente_S
+                TempPopLabel:
+                    text: "Enrolamento T"
+                TempPopLabel:
+                    id: corrente_T
+                TempPopLabel:
+                    text: "Média"
+                TempPopLabel:
+                    id: corrente_media
+
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgb: 0.9,0.9,0.9
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                rows: 5
+                cols: 2
+                TempPopLabel:
+                    text: "Potencia Reativa (VAr)"
+                    bold: True
+                BoxLayout:
+                TempPopLabel:
+                    text: "Enrolamento R"
+                TempPopLabel:
+                    id: potencia_reativa_r
+                TempPopLabel:
+                    text: "Enrolamento S"
+                TempPopLabel:
+                    id: potencia_reativa_s
+                TempPopLabel:
+                    text: "Enrolamento T"
+                TempPopLabel:
+                    id: potencia_reativa_t
+                TempPopLabel:
+                    text: "Total"
+                TempPopLabel:
+                    id: potencia_reativa_total
+
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgb: 0.9,0.9,0.9
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                rows: 5
+                cols: 2
+                TempPopLabel:
+                    text: "Tensão (V)"
+                    bold: True
+                BoxLayout:
+                TempPopLabel:
+                    text: "RS"
+                TempPopLabel:
+                    id: tensao_RS
+                TempPopLabel:
+                    text: "ST"
+                TempPopLabel:
+                    id: tensao_ST
+                TempPopLabel:
+                    text: "TR"
+                TempPopLabel:
+                    id: tensao_TR
+                TempPopLabel:
+                    text: ""
+                TempPopLabel:
+                    text: ""
+
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgb: 0.9,0.9,0.9
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                rows: 5
+                cols: 2
+                TempPopLabel:
+                    text: "Potencia Ativa (w)"
+                    bold: True
+                BoxLayout:
+                TempPopLabel:
+                    text: "Enrolamento R"
+                TempPopLabel:
+                    id: potencia_ativa_r
+                TempPopLabel:
+                    text: "Enrolamento S"
+                TempPopLabel:
+                    id: potencia_ativa_s
+                TempPopLabel:
+                    text: "Enrolamento T"
+                TempPopLabel:
+                    id: potencia_ativa_t
+                TempPopLabel:
+                    text: "Total"
+                TempPopLabel:
+                    id: potencia_ativa_total
+
+<Atuacao>:
+    title: "ATUAÇÃO DO CONTROLE DE TEMPERATURA"
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            orientation: "vertical"
+            padding: 10
+            spacing: 10
+
+            # Faixa de título
+            Label:
+                text: "Controle dos Aquecedores"
                 size_hint_y: None
                 height: 40
-                text: "Fechar"
-                on_release:
-                    root.dismiss()
-                    root.clearInfo()
+                bold: True
+                font_size: 20
+                color: (1,1,1,1)
+                canvas.before:
+                    Color:
+                        rgba: (0.1, 0.4, 0.7, 1)  # azul faixa
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
 
+            # Faixa com TextInputs lado a lado
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: 50
+                spacing: 20
+
+                BoxLayout:
+                    orientation: "vertical"
+                    Label:
+                        text: "Aquecedor 1"
+                        size_hint_y: None
+                        height: 20
+
+                BoxLayout:
+                    orientation: "vertical"
+                    Label:
+                        text: "Aquecedor 2"
+                        size_hint_y: None
+                        height: 20
+
+            # Grid com os botões
+            GridLayout:
+                cols: 2
+                rows: 2
+                spacing: 10
+                size_hint_y: None
+                height: 100
+
+                Button:
+                    text: "Liga"
+                    on_press: 
+                        app.root.ids.aquecedor1.source = "imgs/aquecedor.jpg"
+                        app.root.atuaAquecedor(1)
+
+                Button:
+                    text: "Liga"
+                    on_press: 
+                        app.root.ids.aquecedor2.source = "imgs/aquecedor.jpg"
+                        app.root.atuaAquecedor(2)
+
+                Button:
+                    text: "Desliga"
+                    on_press: 
+                        app.root.ids.aquecedor1.source = "imgs/aquecedor_off.jpg"
+                        app.root.atuaAquecedor(3)
+
+                Button:
+                    text: "Desliga"
+                    on_press: 
+                        app.root.ids.aquecedor2.source = "imgs/aquecedor_off.jpg"
+                        app.root.atuaAquecedor(4)
+
+        BoxLayout:
+            orientation: "vertical"
+            padding: 10
+            spacing: 10
+
+            # Faixa de título
+            Label:
+                text: "Controle dos Compressores"
+                size_hint_y: None
+                height: 40
+                bold: True
+                font_size: 20
+                color: (1,1,1,1)
+                canvas.before:
+                    Color:
+                        rgba: (0.1, 0.4, 0.7, 1)  # azul faixa
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: 50
+                spacing: 20
+            GridLayout:
+                cols: 2
+                rows: 2
+                spacing: 10
+                size_hint_y: None
+                height: 100
+
+                Button:
+                    text: "Scroll"
+                    on_press: 
+                        app.root.defineCompressor(1)
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    Label:
+                        text: "Frequência (Hz)"
+                        size_hint_y: None
+                        height: 50
+                    TextInput:
+                        font_size: 14
+                        halign: 'center'
+                        valign: 'middle'
+                        size_hint_y: None
+                        height: 40
+                        
+
+                Button:
+                    text: "Hermético"
+                    on_press: 
+                        app.root.defineCompressor(2)
+
+                BoxLayout:
+            
+        BoxLayout:
+            orientation: "vertical"
+            padding: 10
+            spacing: 10
+
+            # Faixa de título
+            Label:
+                text: "Controle de Temperatura"
+                size_hint_y: None
+                height: 40
+                bold: True
+                font_size: 20
+                color: (1,1,1,1)
+                canvas.before:
+                    Color:
+                        rgba: (0.1, 0.4, 0.7, 1)  # azul faixa
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: 50
+                spacing: 20
+            GridLayout:
+                cols: 2
+                rows: 2
+                spacing: 10
+                size_hint_y: None
+                height: 100
+
+                Button:
+                    text: "Liga"
+                    on_press: 
+                        app.root.ligaCT(1)
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    Label:
+                        text: "Temperatura ºC"
+                        size_hint_y: None
+                        height: 50
+                    TextInput:
+                        font_size: 14
+                        halign: 'center'
+                        valign: 'middle'
+                        size_hint_y: None
+                        height: 40
+
+                Button:
+                    text: "Desliga"
+                    on_press: 
+                        app.root.ligaCT(2)
+
+                BoxLayout:
+            
+        
+        
 <LabeledCheckBoxDataGraph>:
     orientation: 'horizontal'
     size_hint: (0.1, 1)
@@ -257,3 +542,104 @@
                 text: "Fechar"
                 size_hint: (0.2, 1)
                 on_release: root.dismiss()
+
+<TempPopLabel@Label>:
+    text: "-.-"
+    halign: 'center'
+    color: (0.1,0.1,0.1,1)
+    font_size: 16
+
+<LabeledCheckBoxHistTable>:
+    size_hint_y: None
+    height: dp(35)   # altura maior para dar espaçamento
+    
+    BoxLayout:
+        orientation: "horizontal"
+        spacing: dp(5)
+        padding: dp(5)
+        
+        CheckBox:
+            id: checkbox
+            size_hint_x: None
+            width: dp(30)
+            active: False   # garante que pode ser marcado
+       
+        Label:
+            id: label
+            text: ""
+            font_size: "16sp"
+            color: (0,0,0,1)
+            halign: "left"
+            valign: "middle"
+            text_size: self.size
+
+<HistTablePopup>:
+    title: "Histórico de Dados"
+    size_hint: 0.95, 0.95
+    BoxLayout:
+        orientation: "horizontal"
+        spacing: dp(10)
+        padding: dp(10)
+
+        # Coluna da esquerda -> Checkboxes
+        ScrollView:
+            size_hint_x: 0.3
+            do_scroll_x: False
+            do_scroll_y: True
+            GridLayout:
+                id: sensores
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(5)
+
+        # Coluna da direita -> filtros + tabela
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_x: 0.7
+            spacing: dp(5)
+
+            BoxLayout:
+                size_hint_y: None
+                height: dp(40)
+                spacing: dp(5)
+
+                Label:
+                    text: "Início:"
+                    size_hint_x: None
+                    width: dp(50)
+                TextInput:
+                    id: txt_init_time
+                    hint_text: "dd/mm/yyyy HH:MM:SS"
+                    multiline: False
+
+                Label:
+                    text: "Fim:"
+                    size_hint_x: None
+                    width: dp(40)
+                TextInput:
+                    id: txt_final_time
+                    hint_text: "dd/mm/yyyy HH:MM:SS"
+                    multiline: False
+
+                Button:
+                    text: "Buscar"
+                    size_hint_x: None
+                    width: dp(100)
+                    on_release: app.root.getDataDB()
+
+            Label:
+                text: "Tabela de Resultados"
+                bold: True
+                size_hint_y: None
+                height: dp(30)
+
+            ScrollView:
+                do_scroll_x: True
+                do_scroll_y: True
+                GridLayout:
+                    id: data_table
+                    cols: 1
+                    size_hint_y: None
+                    height: self.minimum_height
+

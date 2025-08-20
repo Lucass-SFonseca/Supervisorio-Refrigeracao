@@ -1,13 +1,15 @@
 from kivy.uix.boxlayout import BoxLayout
-from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup
+from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup, HistTablePopup, LabeledCheckBoxHistTable, Atuacao
 from pyModbusTCP.client import ModbusClient
 from kivy.core.window import Window
+from kivy_garden.graph import LinePlot
 from threading import Thread, Lock
 from time import sleep
 from datetime import datetime
-from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
+from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
 from pymodbus.constants import Endian
 from timeseriesgraph import TimeSeriesGraph
+from db import DBWriter
 import random
 
 class MainWidget(BoxLayout):
@@ -25,6 +27,7 @@ class MainWidget(BoxLayout):
         Construtor do widget principal
         """
         super().__init__()
+        self._db = DBWriter()
         self._scan_time = kwargs.get('scan_time')
         self._serverIP = kwargs.get('server_ip')
         self._serverPort = kwargs.get('server_port')
@@ -36,20 +39,20 @@ class MainWidget(BoxLayout):
         self._meas['values']={}
         self._lock=Lock()
         self._leitura=Leitura()
+        self._atuacao=Atuacao()
         self.motor_ligado = False
         self.tipo_partida = 3
+        self._htable = HistTablePopup(tags=self._tags)
 
         self._tags = kwargs.get('modbus_addrs')
         for key,value in self._tags.items():
-            if key == 'Temperatura':
-                plot_color = (1,0,0,1)
-            else:
-                plot_color = (random.random(), random.random(), random.random(), 1)
+            plot_color = (random.random(), random.random(), random.random(), 1)
             self._tags[key]['color'] = plot_color
 
+        self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura_saida']['color'])
+        self._htable = HistTablePopup(tags=self._tags)
+
         
-        self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura']['color'])
-    
     def startDataRead(self, ip, port):
         self._serverIP = ip
         self._serverPort = port
@@ -79,28 +82,63 @@ class MainWidget(BoxLayout):
             while self._updateWidgets:
                 self.readData()
                 self.updateGUI()
+                mid = self._db.save_measurement(self._meas['timestamp'], self._meas['values'])
+                if mid:
+                    print(f"[DB] Medição salva ID={mid} em {self._meas['timestamp']}")
                 sleep(self._scan_time/1000)
         except Exception as e:
             self._modbusClient.close()
-            print("Erro: ",e.args)
+            print("Erro: ", e.args)
 
     def readData(self):
-        """
-        Método para a leitura dos dados por meio do protocolo MODBUS
-        """
         self._meas['timestamp'] = datetime.now()
-        for key,value in self._tags.items():
-            if value["tipo"] == 'FP':
-                self._meas['values'][key] = self.read_float_point(self._tags[key]["addr"])
-            if value["tipo"] == '4X':
-                self._meas['values'][key] = self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"]
-
-    def read_float_point(self, endereco):
         with self._lock:
-            leitura= self._modbusClient.read_holding_registers(endereco,2)
-            decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
+            for key,value in self._tags.items():
+                if value["tipo"] == 'FP':
+                    self._meas['values'][key] = round(self.readFloatPoint(self._tags[key]["addr"])/value["div"], 2)
+                if value["tipo"] == '4X':
+                    if self._tags[key].get('bit') != None:
+                        self._meas['values'][key] = self.leitura_bit(self._tags[key]["addr"],self._tags[key]["bit"])
+                    else:    
+                        self._meas['values'][key] = round(self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"],2)
+
+    def readFloatPoint(self, endereco):
+        # with self._lock:
+        leitura = self._modbusClient.read_holding_registers(endereco,2)
+        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
 
         return decoder.decode_32bit_float()
+
+    def leitura_bit(self, addr, bit):
+        leitura = self._modbusClient.read_holding_registers(addr, 1)
+        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
+
+        lista1 = decoder.decode_bits()
+        lista2 = decoder.decode_bits()
+
+        lista_retorno = lista2+lista1
+
+        return  lista_retorno[bit]
+    
+    def escrita_bit(self, addr, bit, valor_escrita):
+        with self._lock:
+            leitura = self._modbusClient.read_holding_registers(addr, 1)
+        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
+
+        lista1 = decoder.decode_bits()
+        lista2 = decoder.decode_bits()
+
+        lista_clp = lista2+lista1
+
+        lista_clp[bit] = valor_escrita
+
+        builder = BinaryPayloadBuilder()
+        builder.add_bits(lista_clp)
+        
+        with self._lock:
+            self._modbusClient.write_multiple_registers(addr, builder.to_registers())
+              
+        pass
 
     def updateGUI(self):
         """
@@ -108,24 +146,92 @@ class MainWidget(BoxLayout):
         """
         # Atualização das labels específicas
         if 'Velocidade_saida_ar' in self.ids:
-            self.ids.Velocidade_saida_ar.text = f"{round(self._meas['values']['Velocidade_saida_ar'],2)} m/s"
+            self.ids.Velocidade_saida_ar.text = f"{self._meas['values']['Velocidade_saida_ar']/self._tags['Velocidade_saida_ar']['div']}"
         
         if 'Vazao_saida_ar' in self.ids:
-            self.ids.Vazao_saida_ar.text = f"{round(self._meas['values']['Vazao_saida_ar'],2)} m³/s"
+            self.ids.Vazao_saida_ar.text = f"{self._meas['values']['Vazao_saida_ar']/self._tags['Vazao_saida_ar']['div']}"
         
         if 'Temperatura' in self.ids:
-            self.ids.Temperatura.text = f"{round(self._meas['values']['Temperatura'],2)} °C"
+            self.ids.Temperatura.text = f"{self._meas['values']['Temperatura_saida']} °C"
+
+        if 'pit01' in self.ids:
+            self.ids.pit01.text = f"{self._meas['values']['ve.pit01']}"
+        
+        if 'pit02' in self.ids:
+            self.ids.pit02.text = f"{self._meas['values']['ve.pit02']}"
+
+        if 'pit03' in self.ids:
+            self.ids.pit03.text = f"{self._meas['values']['ve.pit03']}"
+        
+        if 'tit01' in self.ids:
+            self.ids.tit01.text = f"{self._meas['values']['ve.tit01']}"
+        
+        if 'tit02' in self.ids:
+            self.ids.tit02.text = f"{self._meas['values']['ve.tit02']}"
+
+        # Atualização das labels do popup Leituras
+        for key,value in self._tags.items():
+            if self.ids.get(key) != None:
+                self.ids[key].text = str(self._meas['values'][key])
+            elif self._leitura.ids.get(key) != None:
+                self._leitura.ids[key].text = str(self._meas['values'][key])
 
         # Atualização do nível do termômetro
-        self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura']/45*self.ids.termometro.size[1])
+        self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura_saida']/45*self.ids.termometro.size[1])
+
+        # Atualização do widget de vazão
+        self.ids.lb_vazao.size = (self.ids.vazao.size[0] * self._meas['values']['Vazao_saida_ar'] / 2000, self.ids.vazao.size[1])
 
         # Atualização do gráfico    
-        self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura']),0)
+        self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura_saida']),0)
 
     def stopRefresh(self):
         self._updateWidgets = False
+        
+    def abrirHistorico(self):
+        print("Abrindo popup de histórico...")
+        self._htable.open()
+    
+    def getDataDB(self):
+        """ 
+        Busca dados do DB e preenche tabela 
+        """
+        try:
+            init_t = self.parseDTString(self._htable.ids.txt_init_time.text)
+            final_t = self.parseDTString(self._htable.ids.txt_final_time.text)
 
-    def selecionar_partida(self, tipo):
+            if not init_t or not final_t or init_t >= final_t:
+                print("Intervalo de datas inválido.")
+                self._htable.update_table(None, None)
+                return
+
+            selected = []
+            for w in self._htable.ids.sensores.children:
+                if w.ids["checkbox"].active:
+                    selected.append(w.id)
+
+            if not selected:
+                print("Nenhuma variável selecionada.")
+                self._htable.update_table(None, None)
+                return
+
+            dados = self._db.get_tags_series(selected, init_t, final_t)
+            self._htable.update_table(dados, {k: self._tags[k] for k in selected})
+        except Exception as e:
+            import traceback
+            print("Erro na getDataDB:", e)
+            traceback.print_exc()
+
+            
+    def parseDTString(self, datetime_str):
+        """ Converte string do usuário em datetime """
+        try:
+            return datetime.strptime(datetime_str, '%d/%m/%Y %H:%M:%S')
+        except Exception as e:
+            print("Erro ao converter data/hora:", e)
+            return None
+
+    def selecionarPartida(self, tipo):
         self.tipo_partida = tipo
 
         # Atualiza imagens dos botões
@@ -136,7 +242,7 @@ class MainWidget(BoxLayout):
         with self._lock:
             self._modbusClient.write_single_register(1324,tipo)
 
-    def alterna_motor(self):
+    def alternaMotor(self):
         if self.motor_ligado:
             self.desligar()
             self.ids.botao_toggle.background_normal = "imgs/icone_mot_off.jpg"
@@ -148,21 +254,21 @@ class MainWidget(BoxLayout):
 
     def ligar(self):
         if self.tipo_partida == 1:
-            self.liga_soft()
+            self.ligaSoft()
         elif self.tipo_partida == 2:
-            self.liga_inversor()
+            self.ligaInversor()
         elif self.tipo_partida == 3:
-            self.liga_direta()
+            self.ligaDireta()
 
     def desligar(self):
         if self.tipo_partida == 1:
-            self.desliga_soft()
+            self.desligaSoft()
         elif self.tipo_partida == 2:
-            self.desliga_inversor()
+            self.desligaInversor()
         elif self.tipo_partida == 3:
-            self.desliga_direta()
+            self.desligaDireta()
 
-    def liga_direta(self):
+    def ligaDireta(self):
 
         with self._lock:
 
@@ -170,7 +276,7 @@ class MainWidget(BoxLayout):
                 self._modbusClient.write_single_register(1319,1)
                 pass
 
-    def desliga_direta(self):
+    def desligaDireta(self):
 
         with self._lock:
 
@@ -178,7 +284,7 @@ class MainWidget(BoxLayout):
                 self._modbusClient.write_single_register(1319,0)
                 pass
 
-    def liga_soft(self):
+    def ligaSoft(self):
 
         with self._lock:
 
@@ -186,7 +292,7 @@ class MainWidget(BoxLayout):
                 self._modbusClient.write_single_register(1316,1)
                 pass
 
-    def desliga_soft(self):
+    def desligaSoft(self):
 
         with self._lock:
 
@@ -194,7 +300,7 @@ class MainWidget(BoxLayout):
                 self._modbusClient.write_single_register(1316,0)
                 pass
 
-    def liga_inversor(self):
+    def ligaInversor(self):
 
         with self._lock:
 
@@ -202,10 +308,76 @@ class MainWidget(BoxLayout):
                 self._modbusClient.write_single_register(1312,1)
                 pass
 
-    def desliga_inversor(self):
+    def desligaInversor(self):
 
         with self._lock:
 
             if self._modbusClient.read_holding_registers(1216,1)[0] == 2 and self._modbusClient.read_holding_registers(1312,1)[0] == 1:
                 self._modbusClient.write_single_register(1312,0)
                 pass
+
+    def variaFrequenciaMotor(self, val):
+        with self._lock:
+            self._modbusClient.write_single_register(1313,int(val*10))
+            print("frequencia definida em: ", val)
+            pass
+
+    def defineRampa(self, tipo ,val):
+
+        if tipo == 1:
+
+            with self._lock:
+                self._modbusClient.write_single_register(1314, int(int(self.ids.roff_label.text)*10))
+                self._modbusClient.write_single_register(1317, int(self.ids.roff_label.text))
+
+        if tipo == 2:
+            
+            with self._lock:
+                self._modbusClient.write_single_register(1315, int(int(self.ids.roff_label.text)*10))
+                self._modbusClient.write_single_register(1318, int(self.ids.roff_label.text))
+
+    def atuaAquecedor(self, sel):
+        if sel == 1:
+            self.escrita_bit(1329,4,1)
+            print("Aquecedor 1 ligado")
+        if sel == 2:
+            self.escrita_bit(1329,6,1)
+            print("Aquecedor 2 ligado")
+        if sel == 3:
+            self.escrita_bit(1329,4,0)
+            self.escrita_bit(1329,5,1)
+            print("Aquecedor 1 desligado")
+        if sel == 4:
+            self.escrita_bit(1329,6,0)
+            self.escrita_bit(1329,7,1)
+            print("Aquecedor 2 desligado")
+        pass
+
+    def defineCompressor(self, type):
+        if type == 1:
+            self.escrita_bit(1328,1,0)
+            print("Compressor Scroll selecionado")
+        if type == 2:
+            self.escrita_bit(1328,1,1)
+            print("Compressor Hermético selecionado")
+        pass
+
+    def ligaCT(self, value):
+        if value == 1:
+            self.escrita_bit(1328,4,1)
+            print("Controle de temperatura ligado")
+        if value == 2:
+            self.escrita_bit(1328,4,0)
+            self.escrita_bit(1329,0,1)
+            print("Controle de temperatura desligado")
+        pass
+
+    def defineTemp(self, value):
+        self._modbusClient.write_single_register(1338,int(value))
+        print("Temperatura alvo definida em: ", value)
+        pass
+
+    def defineFreqCompressor(self, value):
+        self._modbusClient.write_single_register(1236,int(value))
+        print("Frequência do compressor definida em: ", value)
+        pass
