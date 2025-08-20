@@ -53,6 +53,9 @@ class MainWidget(BoxLayout):
         self._selected_tag = "Temperatura"
 
         self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura']['color'])
+        # GARANTIR que as tags são passadas
+        self._graph.tags = self._tags
+        print("Tags passadas para o gráfico:", list(self._tags.keys()))
     
     def startDataRead(self, ip, port):
         self._serverIP = ip

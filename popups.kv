@@ -210,14 +210,33 @@
 
 <LabeledChangeBoxDataGraph>:
     orientation: 'horizontal'
-    size_hint: (0.1, 1)
+    size_hint: (0.2, 1)
+    padding: [2, 0]
+    spacing: 4
+    
     CheckBox:
         id: checkbox
+        size_hint_x: None
+        width: 30
         on_active:
             (app.root.set_graph_variable(n_label.text, unidaderef.text) if app and app.root else None) if self.active else None
-
+    
+    Label:
+        id: nick_label
+        text: 'Carregando...'
+        size_hint_x: 0.7
+        color: 1, 1, 1, 1
+        bold: True
+        halign: 'left'
+        valign: 'middle'
+    
     Label:
         id: n_label
+        text: ''
+        size_hint_x: None
+        width: 0
+        opacity: 0
+    
     Label:
         id: unidaderef
         text: ''
@@ -229,6 +248,7 @@
 
 <DataGraphPopup>:
     title: "Selecione sua medida"
+    on_open: root.update_nicknames()
     BoxLayout:
         orientation: 'vertical'
         TimeSeriesGraph:
@@ -259,7 +279,7 @@
                 LabeledChangeBoxDataGraph:
                     id: calores
                     on_kv_post:
-                        self.ids.n_label.text = "Temperatura"
+                        self.ids.n_label.text = 'Temperatura'
                         self.ids.checkbox.group = 'cb_group'
                         self.ids.checkbox.active = True
                         self.ids.unidaderef.text = "Temperatura [°C]"
@@ -289,12 +309,12 @@
 
         BoxLayout:
             orientation: 'horizontal'
-            size_hint: (1, 0.05)
+            size_hint: (1, 0.1)
             BoxLayout:
                 orientation: 'horizontal'
-                size_hint: (0.5, 1)
+                size_hint: (0.8, 1)
                 Label:
-                    size_hint: (0.3, 1)
+                    size_hint: (0.4, 1)
                     text: "Número de pontos do gráfico"
                 LabeledCheckBoxDataGraph:
                     id: mp20
