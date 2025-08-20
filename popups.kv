@@ -349,25 +349,25 @@
                     text: "Liga"
                     on_press: 
                         app.root.ids.aquecedor1.source = "imgs/aquecedor.jpg"
-                        print("Aquecedor 1 ligado")
+                        app.root.atuaAquecedor(1)
 
                 Button:
                     text: "Liga"
                     on_press: 
                         app.root.ids.aquecedor2.source = "imgs/aquecedor.jpg"
-                        print("Aquecedor 2 ligado")
+                        app.root.atuaAquecedor(2)
 
                 Button:
                     text: "Desliga"
                     on_press: 
                         app.root.ids.aquecedor1.source = "imgs/aquecedor_off.jpg"
-                        print("Aquecedor 1 desligado")
+                        app.root.atuaAquecedor(3)
 
                 Button:
                     text: "Desliga"
                     on_press: 
                         app.root.ids.aquecedor2.source = "imgs/aquecedor_off.jpg"
-                        print("Aquecedor 2 desligado")
+                        app.root.atuaAquecedor(4)
 
         BoxLayout:
             orientation: "vertical"
@@ -403,7 +403,7 @@
                 Button:
                     text: "Scroll"
                     on_press: 
-                        print("Compressor Sroll selecionado")
+                        app.root.defineCompressor(1)
 
                 BoxLayout:
                     orientation: "horizontal"
@@ -417,11 +417,12 @@
                         valign: 'middle'
                         size_hint_y: None
                         height: 40
+                        
 
                 Button:
                     text: "Hermético"
                     on_press: 
-                        print("Compressor Hermético selecionado")
+                        app.root.defineCompressor(2)
 
                 BoxLayout:
             
@@ -459,7 +460,7 @@
                 Button:
                     text: "Liga"
                     on_press: 
-                        print("Controle de temperatura ligado")
+                        app.root.ligaCT(1)
 
                 BoxLayout:
                     orientation: "horizontal"
@@ -477,7 +478,7 @@
                 Button:
                     text: "Desliga"
                     on_press: 
-                        print("Controle de temperatura desligado")
+                        app.root.ligaCT(2)
 
                 BoxLayout:
             
