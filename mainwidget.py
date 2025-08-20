@@ -6,7 +6,7 @@ from kivy_garden.graph import LinePlot
 from threading import Thread, Lock
 from time import sleep
 from datetime import datetime
-from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
 from pymodbus.constants import Endian
 from timeseriesgraph import TimeSeriesGraph
 from db import DBWriter
@@ -91,18 +91,53 @@ class MainWidget(BoxLayout):
 
     def readData(self):
         self._meas['timestamp'] = datetime.now()
-        for key,value in self._tags.items():
-            if value["tipo"] == 'FP':
-                self._meas['values'][key] = round(self.readFloatPoint(self._tags[key]["addr"])/value["div"], 2)
-            if value["tipo"] == '4X':
-                self._meas['values'][key] = round(self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"],2)
+        with self._lock:
+            for key,value in self._tags.items():
+                if value["tipo"] == 'FP':
+                    self._meas['values'][key] = round(self.readFloatPoint(self._tags[key]["addr"])/value["div"], 2)
+                if value["tipo"] == '4X':
+                    if self._tags[key].get('bit') != None:
+                        self._meas['values'][key] = self.leitura_bit(self._tags[key]["addr"],self._tags[key]["bit"])
+                    else:    
+                        self._meas['values'][key] = round(self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"],2)
 
     def readFloatPoint(self, endereco):
-        with self._lock:
-            leitura = self._modbusClient.read_holding_registers(endereco,2)
-            decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
+        # with self._lock:
+        leitura = self._modbusClient.read_holding_registers(endereco,2)
+        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
 
         return decoder.decode_32bit_float()
+
+    def leitura_bit(self, addr, bit):
+        leitura = self._modbusClient.read_holding_registers(addr, 1)
+        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
+
+        lista1 = decoder.decode_bits()
+        lista2 = decoder.decode_bits()
+
+        lista_retorno = lista2+lista1
+
+        return  lista_retorno[bit]
+    
+    def escrita_bit(self, addr, bit, valor_escrita):
+        with self._lock:
+            leitura = self._modbusClient.read_holding_registers(addr, 1)
+        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
+
+        lista1 = decoder.decode_bits()
+        lista2 = decoder.decode_bits()
+
+        lista_clp = lista2+lista1
+
+        lista_clp[bit] = valor_escrita
+
+        builder = BinaryPayloadBuilder()
+        builder.add_bits(lista_clp)
+        
+        with self._lock:
+            self._modbusClient.write_multiple_registers(addr, builder.to_registers())
+              
+        pass
 
     def updateGUI(self):
         """
@@ -144,7 +179,7 @@ class MainWidget(BoxLayout):
         self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura_saida']/45*self.ids.termometro.size[1])
 
         # Atualização do widget de vazão
-        self.ids.lb_vazao.size = (self.ids.vazao.size[0] * self._meas['values']['Vazao_saida_ar'] / 1000, self.ids.vazao.size[1])
+        self.ids.lb_vazao.size = (self.ids.vazao.size[0] * self._meas['values']['Vazao_saida_ar'] / 2000, self.ids.vazao.size[1])
 
         # Atualização do gráfico    
         self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura_saida']),0)
@@ -304,8 +339,68 @@ class MainWidget(BoxLayout):
                 self._modbusClient.write_single_register(1312,0)
                 pass
 
-    def variaFrequenciaMotor(self, *args):
+    def variaFrequenciaMotor(self, val):
         with self._lock:
-            self._modbusClient.write_single_register(1313,args[1]/10)
-            print("frequencia definida em: ", args[1]/10)
+            self._modbusClient.write_single_register(1313,int(val*10))
+            print("frequencia definida em: ", val)
             pass
+
+    def defineRampa(self, tipo ,val):
+
+        if tipo == 1:
+
+            with self._lock:
+                self._modbusClient.write_single_register(1314, int(int(self.ids.roff_label.text)*10))
+                self._modbusClient.write_single_register(1317, int(self.ids.roff_label.text))
+
+        if tipo == 2:
+            
+            with self._lock:
+                self._modbusClient.write_single_register(1315, int(int(self.ids.roff_label.text)*10))
+                self._modbusClient.write_single_register(1318, int(self.ids.roff_label.text))
+
+    def atuaAquecedor(self, sel):
+        if sel == 1:
+            self.escrita_bit(1329,4,1)
+            print("Aquecedor 1 ligado")
+        if sel == 2:
+            self.escrita_bit(1329,6,1)
+            print("Aquecedor 2 ligado")
+        if sel == 3:
+            self.escrita_bit(1329,4,0)
+            self.escrita_bit(1329,5,1)
+            print("Aquecedor 1 desligado")
+        if sel == 4:
+            self.escrita_bit(1329,6,0)
+            self.escrita_bit(1329,7,1)
+            print("Aquecedor 2 desligado")
+        pass
+
+    def defineCompressor(self, type):
+        if type == 1:
+            self.escrita_bit(1328,1,0)
+            print("Compressor Scroll selecionado")
+        if type == 2:
+            self.escrita_bit(1328,1,1)
+            print("Compressor Hermético selecionado")
+        pass
+
+    def ligaCT(self, value):
+        if value == 1:
+            self.escrita_bit(1328,4,1)
+            print("Controle de temperatura ligado")
+        if value == 2:
+            self.escrita_bit(1328,4,0)
+            self.escrita_bit(1329,0,1)
+            print("Controle de temperatura desligado")
+        pass
+
+    def defineTemp(self, value):
+        self._modbusClient.write_single_register(1338,int(value))
+        print("Temperatura alvo definida em: ", value)
+        pass
+
+    def defineFreqCompressor(self, value):
+        self._modbusClient.write_single_register(1236,int(value))
+        print("Frequência do compressor definida em: ", value)
+        pass

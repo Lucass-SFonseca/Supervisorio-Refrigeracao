@@ -48,7 +48,8 @@ class MainApp(App):
             've.pit01': {'addr': 1222, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'PSI'},
             've.pit02': {'addr': 1224, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'PSI'},
             've.pit03': {'addr': 1226, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'mmH2O'},
-            've.nv_escreve': {'addr': 1310, 'tipo': 'FP', 'l/e': 'l/e', 'div': 1, 'unid': '%'}
+            've.nv_escreve': {'addr': 1310, 'tipo': 'FP', 'l/e': 'l/e', 'div': 1, 'unid': '%'},
+            've.habilita': { 'addr': 1330, 'tipo': '4X','div':	1, 'bit': 3}
         }
         )
 

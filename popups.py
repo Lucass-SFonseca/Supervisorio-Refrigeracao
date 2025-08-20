@@ -58,7 +58,6 @@ class Atuacao(Popup):
        """
        super()._init_(**kwargs)
 
-
 class LabeledCheckBoxDataGraph(BoxLayout):
     pass
 

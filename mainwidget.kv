@@ -195,8 +195,7 @@
             cursor_color: (0, 0, 0, 1)            # cor do cursor
             on_text_validate:
                 print("Definindo rampa de subida em: ", self.text)
-                self._modbusClient.write_single_register(1314, int(self.ids.roff_label.text/10))
-                self._modbusClient.write_single_register(1317, int(self.ids.roff_label.text))
+                root.defineRampa(1, self.text)
 
         TextInput:
             id: roff_label
@@ -217,8 +216,7 @@
             cursor_color: (0, 0, 0, 1)            # cor do cursor
             on_text_validate:
                 print("Definindo rampa de descida em: ", self.text) 
-                self._modbusClient.write_single_register(1315, int(self.ids.roff_label.text/10))
-                self._modbusClient.write_single_register(1318, int(self.ids.roff_label.text))
+                root.defineRampa(2, self.text)
 
         Slider:
             id: my_slider
@@ -234,7 +232,7 @@
             value_track: True
             value_track_color: (0,0,0,1)
             on_value: 
-                root.variaFrequenciaMotor(*args)
+                root.variaFrequenciaMotor(self.value)
                 slider_label.text = str(int(self.value))
 
         TextInput:
