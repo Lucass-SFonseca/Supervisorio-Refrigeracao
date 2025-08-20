@@ -42,6 +42,7 @@ class MainWidget(BoxLayout):
         self._atuacao=Atuacao()
         self.motor_ligado = False
         self.tipo_partida = 3
+        self._htable = HistTablePopup(tags=self._tags)
 
         self._tags = kwargs.get('modbus_addrs')
         for key,value in self._tags.items():
@@ -186,73 +187,49 @@ class MainWidget(BoxLayout):
 
     def stopRefresh(self):
         self._updateWidgets = False
+        
+    def abrirHistorico(self):
+        print("Abrindo popup de histórico...")
+        self._htable.open()
     
     def getDataDB(self):
-        print("DEBUG: getDataDB foi chamada.")
         """ 
-        Coleta os parâmetros do popup e desenha o histórico das tags selecionadas
+        Busca dados do DB e preenche tabela 
         """
-        print("DEBUG sensores children:")
-        for w in self._htable.ids.sensores.children:
-            print(" -", type(w), getattr(w, "ids", None))
-
         try:
-            print(f"DEBUG: Valor de txt_init_time: {self._htable.ids.txt_init_time.text}")
-            print(f"DEBUG: Valor de txt_final_time: {self._htable.ids.txt_final_time.text}")
             init_t = self.parseDTString(self._htable.ids.txt_init_time.text)
             final_t = self.parseDTString(self._htable.ids.txt_final_time.text)
-            print(f"DEBUG: init_t formatado: {init_t}")
-            print(f"DEBUG: final_t formatado: {final_t}")
 
-            selected = []
-            print("DEBUG: Iterando sobre checkboxes...")
-            for w in self._htable.ids.sensores.children:
-                print(f"DEBUG: Checkbox encontrada: {w.id}, active: {w.ids['checkbox'].active}")
-                if w.ids["checkbox"].active:
-                    selected.append(w.id)
-            print(f"DEBUG: Checkboxes selecionadas: {selected}")
-
-            dados = self._db.get_tags_series(selected, init_t, final_t)
-            print("DEBUG histórico (dados brutos):")
-            print(dados)
-
-            if not dados or len(dados.get("timestamp", [])) == 0:
-                print("DEBUG: Nenhum dado retornado do DB ou timestamp vazio.")
+            if not init_t or not final_t or init_t >= final_t:
+                print("Intervalo de datas inválido.")
                 self._htable.update_table(None, None)
                 return
-            self._htable.update_table(dados, self._tags)
-            print("DEBUG: Tabela atualizada com sucesso.")
-            """
-            for key in selected:
-                print(f"DEBUG: Plotando {key} com dados: {dados[key]}")
-                p = LinePlot(line_width=1.5, color=self._tags[key]["color"])
-                # Certifique-se de que os dados são numéricos e que o enumerate está correto
-                # O problema pode estar aqui se os valores forem None ou não numéricos
-                valid_points = [(i, v) for i, v in enumerate(dados[key]) if v is not None]
-                p.points = valid_points
-                self._hgraph.ids.graph.add_plot(p)
 
-            self._hgraph.ids.graph.xmax = len(dados["timestamp"])
-            # update_x_labels aceita datetime; ótimo para formatar HH:MM:SS
-            self._htable.ids.update_table(dados["timestamp"])
-            print("DEBUG: Gráfico atualizado com sucesso.")
-            """
+            selected = []
+            for w in self._htable.ids.sensores.children:
+                if w.ids["checkbox"].active:
+                    selected.append(w.id)
+
+            if not selected:
+                print("Nenhuma variável selecionada.")
+                self._htable.update_table(None, None)
+                return
+
+            dados = self._db.get_tags_series(selected, init_t, final_t)
+            self._htable.update_table(dados, {k: self._tags[k] for k in selected})
         except Exception as e:
             import traceback
             print("Erro na getDataDB:", e)
             traceback.print_exc()
+
             
     def parseDTString(self, datetime_str):
-        """ 
-        Método que converte a string inserida pelo usuário para o formato utilizado
-        na busca de dados do DB
-        """
+        """ Converte string do usuário em datetime """
         try:
-            d=datetime.strptime(datetime_str,'%d/%m/%Y %H:%M:%S')
-            return d.strftime("%Y-%m-%d %H:%M:%S")
+            return datetime.strptime(datetime_str, '%d/%m/%Y %H:%M:%S')
         except Exception as e:
-            print("Erro ", e.args)
-            
+            print("Erro ao converter data/hora:", e)
+            return None
 
     def selecionarPartida(self, tipo):
         self.tipo_partida = tipo
