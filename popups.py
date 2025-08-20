@@ -48,6 +48,17 @@ class Leitura(Popup):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+class Atuacao(Popup):
+    """
+    Popup dos botões de atuação
+    """
+    def _init_(self, **kwargs):
+       """
+       Construtor da classe
+       """
+       super()._init_(**kwargs)
+
+
 class LabeledCheckBoxDataGraph(BoxLayout):
     pass
 

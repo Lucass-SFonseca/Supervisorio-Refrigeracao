@@ -66,18 +66,20 @@
         Label:
             id: lb_vazao
             size_hint: (None,None)
-            size: (vazao.size[0], vazao.size[1]*0.25)
-            pos_hint: {'x':0.78,'y':0.57}
+            size: (vazao.size[0], vazao.size[1])
+            pos_hint: {'x':0.81,'y':0.565}
             canvas:
                 Color:
                     rgb: (0.678,0.847,0.902)
                 Rectangle:
                     size: self.size
-                    pos: (self.pos[0]+self.width*1.5, self.pos[1])
+                    pos: self.pos
         Image:
             id: vazao
             source: 'imgs/saida_de_ar.png'
             size_hint: 0.23,0.23
+            size_hint: (None,None)
+            size: (180,170)
             pos_hint: lb_vazao.pos_hint
 
         Image:
@@ -95,23 +97,42 @@
         Button:
             id: graficos
             size_hint: (None, None)
-            size: (0.85*62,0.85*58)
+            size: (62,58)
             background_normal: 'imgs/graph_icon.jpg'
             background_down: 'imgs/graph_icon.jpg'
             pos_hint: {'x':0.02,'y':0.90}
             on_release:
                 root._graph.open()
-                print("Click gráficos")
         Button:
             id: leituras
             size_hint: (None, None)
-            size: (0.85*62,0.85*58)
+            size: (62,58)
             background_normal: 'imgs/icone_leitura.jpg'
             background_down: 'imgs/icone_leitura.jpg'
             pos_hint: {'x':0.02,'y':0.80}
             on_release:
                 root._leitura.open()
-                print("Click leituras")
+
+        Button:
+            id: ctrl_temp
+            size_hint: (None, None)
+            size: (62,58)
+            background_normal: 'imgs/atuacao.jpg'
+            background_down: 'imgs/atuacao.jpg'
+            pos_hint: {'x':0.09,'y':0.90}
+            on_release:
+                root._atuacao.open()
+            
+        Button:
+            id: bd
+            size_hint: (None, None)
+            size: (62,58)
+            background_normal: 'imgs/icone_BD.jpg'
+            background_down: 'imgs/icone_BD.jpg'
+            pos_hint: {'x':0.09,'y':0.80}
+            on_release:
+                root._hgraph.open()
+
         Button:
             id: botao_toggle
             size_hint: (None, None)
@@ -120,7 +141,7 @@
             background_down: 'imgs/icone_mot_off.jpg'
             pos_hint: {'x':0.068,'y':0.62}
             on_release: 
-                root.alterna_motor()
+                root.alternaMotor()
 
         Button:
             id: btn_soft
@@ -131,7 +152,7 @@
             pos_hint: {'x':0.08,'y':0.55}
             on_release: 
                 print('Modo de partida: Soft start')
-                root.selecionar_partida(1)
+                root.selecionarPartida(1)
 
         Button:
             id: btn_inversor
@@ -142,7 +163,7 @@
             pos_hint: {'x':0.125,'y':0.57}
             on_release: 
                 print('Modo de partida: Inversor')
-                root.selecionar_partida(2)
+                root.selecionarPartida(2)
 
         Button:
             id: btn_direta
@@ -153,14 +174,88 @@
             pos_hint: {'x':0.035,'y':0.57}
             on_release: 
                 print('Modo de partida: Direta')
-                root.selecionar_partida(3)
-        
-        Button:
-            text: "Dados Históricos"
-            pos_hint:{'right':1,'down':1}
-            size_hint:(0.2,0.05)
-            on_release: 
-                root._hgraph.open()
+                root.selecionarPartida(3)
+
+        TextInput:
+            id: ron_label
+            text: "0"
+            multiline: False
+            input_filter: "int"
+            size_hint: (None, None)
+            height: 30
+            width: 35
+            pos_hint: {"x": 0.05, "y": 0.5}
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+            background_normal: ""     # remove a textura padrão
+            background_active: ""     # idem para quando selecionado
+            background_color: (1, 1, 1, 0)
+            foreground_color: (0, 0, 0, 1)        # cor do texto
+            cursor_color: (0, 0, 0, 1)            # cor do cursor
+            on_text_validate:
+                print("Definindo rampa de subida em: ", self.text)
+                self._modbusClient.write_single_register(1314, int(self.ids.roff_label.text/10))
+                self._modbusClient.write_single_register(1317, int(self.ids.roff_label.text))
+
+        TextInput:
+            id: roff_label
+            text: "0"
+            multiline: False
+            input_filter: "int"
+            size_hint: (None, None)
+            height: 30
+            width: 35
+            pos_hint: {"x": 0.125, "y": 0.5}
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+            background_normal: ""     # remove a textura padrão
+            background_active: ""     # idem para quando selecionado
+            background_color: (1, 1, 1, 0)
+            foreground_color: (0, 0, 0, 1)        # cor do texto
+            cursor_color: (0, 0, 0, 1)            # cor do cursor
+            on_text_validate:
+                print("Definindo rampa de descida em: ", self.text) 
+                self._modbusClient.write_single_register(1315, int(self.ids.roff_label.text/10))
+                self._modbusClient.write_single_register(1318, int(self.ids.roff_label.text))
+
+        Slider:
+            id: my_slider
+            min: 0
+            max: 60
+            step: 1
+            value: 0
+            orientation: "horizontal"
+            size_hint: (0.145, None)
+            height: 50
+            pos_hint: {"x": 0.045, "y": 0.44}
+            cursor_size: (20,20)
+            value_track: True
+            value_track_color: (0,0,0,1)
+            on_value: 
+                root.variaFrequenciaMotor(*args)
+                slider_label.text = str(int(self.value))
+
+        TextInput:
+            id: slider_label
+            text: str(int(my_slider.value))
+            multiline: False
+            input_filter: "int"
+            size_hint: (None, None)
+            height: 30
+            width: 35
+            pos_hint: {"x": 0.02, "y": 0.455}
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+            background_normal: ""     # remove a textura padrão
+            background_active: ""     # idem para quando selecionado
+            background_color: (1, 1, 1, 1)
+            foreground_color: (0, 0, 0, 1)        # cor do texto
+            cursor_color: (0, 0, 0, 1)            # cor do cursor
+            on_text_validate: 
+                if self.text.isdigit(): my_slider.value = int(self.text)
 
 
         TempLabel:

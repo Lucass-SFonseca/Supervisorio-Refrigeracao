@@ -292,6 +292,85 @@
                 TempPopLabel:
                     id: potencia_ativa_total
 
+<Atuacao>:
+    title: "ATUAÇÃO DO CONTROLE DE TEMPERATURA"
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            orientation: "vertical"
+            padding: 10
+            spacing: 10
+
+            # Faixa de título
+            Label:
+                text: "Controle dos Aquecedores"
+                size_hint_y: None
+                height: 40
+                bold: True
+                font_size: 20
+                color: (1,1,1,1)
+                canvas.before:
+                    Color:
+                        rgba: (0.1, 0.4, 0.7, 1)  # azul faixa
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+
+            # Faixa com TextInputs lado a lado
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: 50
+                spacing: 20
+
+                BoxLayout:
+                    orientation: "vertical"
+                    Label:
+                        text: "Aquecedor 1"
+                        size_hint_y: None
+                        height: 20
+
+                BoxLayout:
+                    orientation: "vertical"
+                    Label:
+                        text: "Aquecedor 2"
+                        size_hint_y: None
+                        height: 20
+
+            # Grid com os botões
+            GridLayout:
+                cols: 2
+                rows: 2
+                spacing: 10
+                size_hint_y: None
+                height: 100
+
+                Button:
+                    text: "Liga"
+                    on_press: 
+                        app.root.ids.aquecedor1.source = "imgs/aquecedor.jpg"
+                        print("Aquecedor 1 ligado")
+
+                Button:
+                    text: "Liga"
+                    on_press: 
+                        app.root.ids.aquecedor2.source = "imgs/aquecedor.jpg"
+                        print("Aquecedor 2 ligado")
+
+                Button:
+                    text: "Desliga"
+                    on_press: 
+                        app.root.ids.aquecedor1.source = "imgs/aquecedor_off.jpg"
+                        print("Aquecedor 1 desligado")
+
+                Button:
+                    text: "Desliga"
+                    on_press: 
+                        app.root.ids.aquecedor2.source = "imgs/aquecedor_off.jpg"
+                        print("Aquecedor 2 desligado")
+
+        
+        
 <LabeledCheckBoxDataGraph>:
     orientation: 'horizontal'
     size_hint: (0.1, 1)
