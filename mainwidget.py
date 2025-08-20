@@ -1,5 +1,5 @@
 from kivy.uix.boxlayout import BoxLayout
-from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup, HistGraphPopup, LabeledCheckBoxHistGraph, Atuacao
+from popups import ModbusPopup, ScanPopup, Leitura, DataGraphPopup, HistTablePopup, LabeledCheckBoxHistTable, Atuacao
 from pyModbusTCP.client import ModbusClient
 from kivy.core.window import Window
 from kivy_garden.graph import LinePlot
@@ -49,7 +49,7 @@ class MainWidget(BoxLayout):
             self._tags[key]['color'] = plot_color
 
         self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura_saida']['color'])
-        self._hgraph = HistGraphPopup(tags=self._tags)
+        self._htable = HistTablePopup(tags=self._tags)
 
         
     def startDataRead(self, ip, port):
@@ -158,20 +158,20 @@ class MainWidget(BoxLayout):
         Coleta os parâmetros do popup e desenha o histórico das tags selecionadas
         """
         print("DEBUG sensores children:")
-        for w in self._hgraph.ids.sensores.children:
+        for w in self._htable.ids.sensores.children:
             print(" -", type(w), getattr(w, "ids", None))
 
         try:
-            print(f"DEBUG: Valor de txt_init_time: {self._hgraph.ids.txt_init_time.text}")
-            print(f"DEBUG: Valor de txt_final_time: {self._hgraph.ids.txt_final_time.text}")
-            init_t = self.parseDTString(self._hgraph.ids.txt_init_time.text)
-            final_t = self.parseDTString(self._hgraph.ids.txt_final_time.text)
+            print(f"DEBUG: Valor de txt_init_time: {self._htable.ids.txt_init_time.text}")
+            print(f"DEBUG: Valor de txt_final_time: {self._htable.ids.txt_final_time.text}")
+            init_t = self.parseDTString(self._htable.ids.txt_init_time.text)
+            final_t = self.parseDTString(self._htable.ids.txt_final_time.text)
             print(f"DEBUG: init_t formatado: {init_t}")
             print(f"DEBUG: final_t formatado: {final_t}")
 
             selected = []
             print("DEBUG: Iterando sobre checkboxes...")
-            for w in self._hgraph.ids.sensores.children:
+            for w in self._htable.ids.sensores.children:
                 print(f"DEBUG: Checkbox encontrada: {w.id}, active: {w.ids['checkbox'].active}")
                 if w.ids["checkbox"].active:
                     selected.append(w.id)
@@ -183,9 +183,11 @@ class MainWidget(BoxLayout):
 
             if not dados or len(dados.get("timestamp", [])) == 0:
                 print("DEBUG: Nenhum dado retornado do DB ou timestamp vazio.")
+                self._htable.update_table(None, None)
                 return
-            self._hgraph.ids.graph.clearPlots()
-            
+            self._htable.update_table(dados, self._tags)
+            print("DEBUG: Tabela atualizada com sucesso.")
+            """
             for key in selected:
                 print(f"DEBUG: Plotando {key} com dados: {dados[key]}")
                 p = LinePlot(line_width=1.5, color=self._tags[key]["color"])
@@ -197,9 +199,9 @@ class MainWidget(BoxLayout):
 
             self._hgraph.ids.graph.xmax = len(dados["timestamp"])
             # update_x_labels aceita datetime; ótimo para formatar HH:MM:SS
-            self._hgraph.ids.graph.update_x_labels(dados["timestamp"])
+            self._htable.ids.update_table(dados["timestamp"])
             print("DEBUG: Gráfico atualizado com sucesso.")
-
+            """
         except Exception as e:
             import traceback
             print("Erro na getDataDB:", e)

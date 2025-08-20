@@ -69,34 +69,39 @@ class DataGraphPopup(Popup):
         self.ids.graph.add_plot(self.plot)
         self.ids.graph.xmax = xmax
 
-class HistGraphPopup(Popup):
-    # whitelist das 4 medidas
-    ALLOWED = {
-        'Temperatura_saida',
-        'Velocidade_saida_ar',
-        'potencia_ativa_total',  # mude para 'potencia_aparente_total' se preferir
-        'corrente_media'
-    }
-    # nomes amigáveis
-    LABELS = {
-        'Temperatura_saida': 'Temperatura de saída',
-        'Velocidade_saida_ar': 'Velocidade de saída de ar',
-        'potencia_ativa_total': 'Potência total',
-        'corrente_media': 'Corrente média'
-    }
-
+class HistTablePopup(Popup):
     def __init__(self, **kwargs):
         tags = kwargs.pop("tags", {})
         super().__init__(**kwargs)
         for key, value in tags.items():
-            if key in self.ALLOWED:
-                cb = LabeledCheckBoxHistGraph()
-                cb.ids.label.text = self.LABELS.get(key, key)
-                cb.ids.label.color = value['color']
-                cb.id = key
-                self.ids.sensores.add_widget(cb)
+            cb = LabeledCheckBoxHistTable()
+            cb.ids.label.text = self.LABELS.get(key, key)
+            cb.ids.label.color = value['color']
+            cb.id = key
+            self.ids.sensores.add_widget(cb)
             
+    def update_table(self, data, tags_info):
+        self.ids.data_table.clear_widgets()
+        if not data or len(data.get("timestamp", [])) == 0:
+            self.ids.data_table.add_widget(Label(text="Nenhum dado encontrado para o período selecionado.", color=(0,0,0,1)))
+            return
 
-class LabeledCheckBoxHistGraph(BoxLayout):
+        # Create header row
+        header_row = GridLayout(cols=len(tags_info) + 1, size_hint_y=None, height=dp(30))
+        header_row.add_widget(Label(text="Timestamp", bold=True, color=(0,0,0,1)))
+        for tag_name in tags_info:
+            header_row.add_widget(Label(text=f"[{tag_name}\n({tags_info[tag_name]['unid']}]"), bold=True, color=(0,0,0,1))
+        self.ids.data_table.add_widget(header_row)
+
+        # Add data rows
+        for i in range(len(data["timestamp"])):
+            data_row = GridLayout(cols=len(tags_info) + 1, size_hint_y=None, height=dp(30))
+            data_row.add_widget(Label(text=data["timestamp"][i].strftime("%d/%m/%Y %H:%M:%S"), color=(0,0,0,1)))
+            for tag_name in tags_info:
+                value = data[tag_name][i]
+                data_row.add_widget(Label(text=f"{value:.2f}" if isinstance(value, (int, float)) else "-", color=(0,0,0,1)))
+            self.ids.data_table.add_widget(data_row)
+                       
+class LabeledCheckBoxHistTable(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
