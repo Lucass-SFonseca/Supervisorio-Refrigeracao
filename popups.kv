@@ -228,7 +228,7 @@
 
 
 <DataGraphPopup>:
-    title: "Grafico de temperatura na Saida"
+    title: "Selecione sua medida"
     BoxLayout:
         orientation: 'vertical'
         TimeSeriesGraph:
@@ -259,7 +259,7 @@
                 LabeledChangeBoxDataGraph:
                     id: calores
                     on_kv_post:
-                        self.ids.n_label.text = 'Temperatura'
+                        self.ids.n_label.text = "Temperatura"
                         self.ids.checkbox.group = 'cb_group'
                         self.ids.checkbox.active = True
                         self.ids.unidaderef.text = "Temperatura [°C]"

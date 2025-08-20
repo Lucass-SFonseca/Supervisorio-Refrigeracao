@@ -127,9 +127,22 @@ class MainWidget(BoxLayout):
         # Atualização do gráfico    
         if (self._selected_tag in self._meas['values']and self._meas['values'][self._selected_tag] is not None ):
             self._graph.ids.graph.updateGraph((self._meas['timestamp'], self._meas['values'][self._selected_tag]), 0)
-
-    def set_graph_variable(self, var_name, y_label):
+    def get_tag_nicknames(self):
+        """
+        Retorna um dicionário com os nicks das tags
+        """
+        nicks = {}
+        for key, value in self._tags.items():
+            nicks[key] = value.get('nick', key)  # Usa o nick se existir, senão usa a chave
+        return nicks
+    def set_graph_variable(self, var_name, y_label=None):
         self._selected_tag = var_name
+
+        # pega o nome legível da tag (ou usa a chave se não tiver 'label')
+        nome_legivel = self._tags[var_name].get('label', var_name)
+
+        # atualiza título do popup
+        self._graph.title = f"Gráfico de {nome_legivel}"
 
         # Obtém limites
         ymin = self._tags[var_name].get('ymin', 0)
@@ -138,21 +151,18 @@ class MainWidget(BoxLayout):
         # Configura limites no gráfico
         self._graph.ids.graph.ymin = ymin
         self._graph.ids.graph.ymax = ymax
-
-        # Ajusta espaçamento vertical
         self._graph.ids.graph.y_ticks_major = ymax / 10
-
-        # Mantém padding fixo para evitar achatamento
         self._graph.ids.graph.padding = 5
 
-        # Ajusta rótulo
-        self._graph.ids.graph.ylabel = y_label
+        # Ajusta rótulo do eixo Y (se não passar y_label, usa o label do dicionário)
+        self._graph.ids.graph.ylabel = y_label if y_label else nome_legivel
 
         # Limpa e adiciona novo plot
         self._graph.ids.graph.clearPlots()
         new_plot = LinePlot(line_width=1.5, color=self._tags[var_name]['color'])
         self._graph.plot = new_plot
         self._graph.ids.graph.add_plot(new_plot)
+
 
 
 

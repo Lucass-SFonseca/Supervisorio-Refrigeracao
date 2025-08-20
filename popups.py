@@ -59,3 +59,4 @@ class DataGraphPopup(Popup):
         self.plot = LinePlot(line_width=1.5, color=plot_color)
         self.ids.graph.add_plot(self.plot)
         self.ids.graph.xmax = xmax
+    
