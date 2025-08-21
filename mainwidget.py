@@ -11,6 +11,9 @@ from pymodbus.constants import Endian
 from timeseriesgraph import TimeSeriesGraph
 from db import DBWriter
 import random
+from kivy_garden.graph import LinePlot
+
+
 
 class MainWidget(BoxLayout):
     """
@@ -49,10 +52,12 @@ class MainWidget(BoxLayout):
             plot_color = (random.random(), random.random(), random.random(), 1)
             self._tags[key]['color'] = plot_color
 
+        self._selected_tag = "Temperatura"
         self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura_saida']['color'])
         self._htable = HistTablePopup(tags=self._tags)
-
-        
+        # GARANTIR que as tags são passadas
+        self._graph.tags = self._tags
+        print("Tags passadas para o gráfico:", list(self._tags.keys()))
     def startDataRead(self, ip, port):
         self._serverIP = ip
         self._serverPort = port
@@ -70,7 +75,7 @@ class MainWidget(BoxLayout):
             else:
                 self._modbusPopup.setInfo("Falha na conexão com o servidor")
         except Exception as e:
-            print("Erro: ", e.args)
+            print("Erro startdata: ", e.args)
 
 
     def updater(self):
@@ -88,10 +93,17 @@ class MainWidget(BoxLayout):
                 sleep(self._scan_time/1000)
         except Exception as e:
             self._modbusClient.close()
-            print("Erro: ", e.args)
+            print("Erro updater: ",e.args)
 
     def readData(self):
         self._meas['timestamp'] = datetime.now()
+        for key,value in self._tags.items():
+            if value["tipo"] == 'FP':
+                self._meas['values'][key] = self.read_float_point(self._tags[key]["addr"])/value["div"]
+            if value["tipo"] == '4X':
+                self._meas['values'][key] = self._modbusClient.read_holding_registers(self._tags[key]["addr"], 1)[0]/value["div"]
+
+    def read_float_point(self, endereco):
         with self._lock:
             for key,value in self._tags.items():
                 if value["tipo"] == 'FP':
@@ -152,8 +164,7 @@ class MainWidget(BoxLayout):
             self.ids.Vazao_saida_ar.text = f"{self._meas['values']['Vazao_saida_ar']/self._tags['Vazao_saida_ar']['div']}"
         
         if 'Temperatura' in self.ids:
-            self.ids.Temperatura.text = f"{self._meas['values']['Temperatura_saida']} °C"
-
+            self.ids.Temperatura.text = f"{round(self._meas['values']['Temperatura_saida'],2)} °C"
         if 'pit01' in self.ids:
             self.ids.pit01.text = f"{self._meas['values']['ve.pit01']}"
         
@@ -175,7 +186,6 @@ class MainWidget(BoxLayout):
                 self.ids[key].text = str(self._meas['values'][key])
             elif self._leitura.ids.get(key) != None:
                 self._leitura.ids[key].text = str(self._meas['values'][key])
-
         # Atualização do nível do termômetro
         self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura_saida']/45*self.ids.termometro.size[1])
 
@@ -183,7 +193,47 @@ class MainWidget(BoxLayout):
         self.ids.lb_vazao.size = (self.ids.vazao.size[0] * self._meas['values']['Vazao_saida_ar'] / 2000, self.ids.vazao.size[1])
 
         # Atualização do gráfico    
-        self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura_saida']),0)
+        if (self._selected_tag in self._meas['values']and self._meas['values'][self._selected_tag] is not None ):
+            self._graph.ids.graph.updateGraph((self._meas['timestamp'], self._meas['values'][self._selected_tag]), 0)
+    def get_tag_nicknames(self):
+        """
+        Retorna um dicionário com os nicks das tags
+        """
+        nicks = {}
+        for key, value in self._tags.items():
+            nicks[key] = value.get('nick', key)  # Usa o nick se existir, senão usa a chave
+        return nicks
+    def set_graph_variable(self, var_name, y_label=None):
+        self._selected_tag = var_name
+
+        # pega o nome legível da tag (ou usa a chave se não tiver 'label')
+        nome_legivel = self._tags[var_name].get('label', var_name)
+
+        # atualiza título do popup
+        self._graph.title = f"Gráfico de {nome_legivel}"
+
+        # Obtém limites
+        ymin = self._tags[var_name].get('ymin', 0)
+        ymax = self._tags[var_name].get('ymax', 50)
+
+        # Configura limites no gráfico
+        self._graph.ids.graph.ymin = ymin
+        self._graph.ids.graph.ymax = ymax
+        self._graph.ids.graph.y_ticks_major = ymax / 10
+        self._graph.ids.graph.padding = 5
+
+        # Ajusta rótulo do eixo Y (se não passar y_label, usa o label do dicionário)
+        self._graph.ids.graph.ylabel = y_label if y_label else nome_legivel
+
+        # Limpa e adiciona novo plot
+        self._graph.ids.graph.clearPlots()
+        new_plot = LinePlot(line_width=1.5, color=self._tags[var_name]['color'])
+        self._graph.plot = new_plot
+        self._graph.ids.graph.add_plot(new_plot)
+
+
+
+
 
     def stopRefresh(self):
         self._updateWidgets = False

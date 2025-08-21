@@ -8,6 +8,7 @@ from datetime import datetime
 from db import DBWriter
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
+from kivy.clock import Clock
 
 class ModbusPopup(Popup):
     """
@@ -62,12 +63,58 @@ class Atuacao(Popup):
 class LabeledCheckBoxDataGraph(BoxLayout):
     pass
 
+class LabeledChangeBoxDataGraph(BoxLayout):
+    pass
+
 class DataGraphPopup(Popup):
     def __init__(self, xmax, plot_color, **kwargs):
         super().__init__(**kwargs)
         self.plot = LinePlot(line_width=1.5, color=plot_color)
         self.ids.graph.add_plot(self.plot)
         self.ids.graph.xmax = xmax
+    def update_nicknames(self):
+        """
+        Atualiza os textos dos checkboxes com os nicks das tags
+        """
+        """
+        Método que atualiza os nicks - AGORA DEFINIDO
+        """
+        print("Método update_nicknames() chamado!")
+        # Adicione aqui a lógica de atualização
+        if hasattr(self, 'tags') and self.tags:
+            print("Tags disponíveis:", list(self.tags.keys()))
+        try:
+            if hasattr(self, 'tags') and self.tags:
+                print("Tags disponíveis para atualização:", list(self.tags.keys()))
+                
+                # Atualiza cada widget individualmente
+                widget_map = {
+                    'calores': 'Temperatura',
+                    'pot': 'Potencia_ativa', 
+                    'vel': 'Velocidade_saida_ar',
+                    'crnt': 'Corrente_media'
+                }
+                
+                for widget_id, tag_name in widget_map.items():
+                    if tag_name in self.tags:
+                        nick = self.tags[tag_name].get('nick', tag_name)
+                        print(f"Atualizando {widget_id} com nick: {nick}")
+                        
+                        # Atualiza diretamente o texto do nick_label
+                        if hasattr(self.ids, widget_id):
+                            widget = self.ids[widget_id]
+                            if hasattr(widget.ids, 'nick_label'):
+                                widget.ids.nick_label.text = nick
+                            else:
+                                print(f"nick_label não encontrado em {widget_id}")
+                    
+            else:
+                print("Tags não disponíveis para atualização")
+                
+        except Exception as e:
+            print(f"Erro ao atualizar nicks: {e}")
+            import traceback
+            traceback.print_exc()
 
 class HistTablePopup(Popup):
     def __init__(self, **kwargs):
