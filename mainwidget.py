@@ -49,7 +49,8 @@ class MainWidget(BoxLayout):
             plot_color = (random.random(), random.random(), random.random(), 1)
             self._tags[key]['color'] = plot_color
 
-        self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura_saida']['color'])
+        self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura_saida']['color'], tags=self._tags)
+        self._graph.update_nicknames()
         self._htable = HistTablePopup(tags=self._tags)
 
         

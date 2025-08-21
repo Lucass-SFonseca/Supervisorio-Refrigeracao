@@ -66,10 +66,13 @@ class LabeledChangeBoxDataGraph(BoxLayout):
 
 class DataGraphPopup(Popup):
     def __init__(self, xmax, plot_color, **kwargs):
+        tags = kwargs.pop('tags',{})
         super().__init__(**kwargs)
         self.plot = LinePlot(line_width=1.5, color=plot_color)
         self.ids.graph.add_plot(self.plot)
         self.ids.graph.xmax = xmax
+        self.tags = tags or {}
+        
     def update_nicknames(self):
         """
         Atualiza os textos dos checkboxes com os nicks das tags
@@ -87,23 +90,20 @@ class DataGraphPopup(Popup):
                 
                 # Atualiza cada widget individualmente
                 widget_map = {
-                    'calores': 'Temperatura',
-                    'pot': 'Potencia_ativa', 
+                    'calores': 'Temperatura_saida',
+                    'pot': 'potencia_ativa_total',
                     'vel': 'Velocidade_saida_ar',
-                    'crnt': 'Corrente_media'
+                    'crnt': 'corrente_media'
                 }
                 
                 for widget_id, tag_name in widget_map.items():
                     if tag_name in self.tags:
                         nick = self.tags[tag_name].get('nick', tag_name)
                         print(f"Atualizando {widget_id} com nick: {nick}")
-                        
-                        # Atualiza diretamente o texto do nick_label
-                        if hasattr(self.ids, widget_id):
-                            widget = self.ids[widget_id]
-                            if hasattr(widget.ids, 'nick_label'):
-                                widget.ids.nick_label.text = nick
-                            else:
+                        widget = self.ids[widget_id]
+                        if 'nick_label' in widget.ids:
+                            widget.ids['nick_label'].text = nick
+                        else:
                                 print(f"nick_label não encontrado em {widget_id}")
                     
             else:
@@ -118,15 +118,17 @@ class HistTablePopup(Popup):
     def __init__(self, **kwargs):
         tags = kwargs.pop("tags", {})
         super().__init__(**kwargs)
-        self.bind(on_open=lambda *a: self._populate_checkboxes(tags))
-        for key, value in tags.items():
+        self.tags = tags or {}
+        self.bind(on_open=lambda *a: self._populate_checkboxes())
+    
+    def _populate_checkboxes(self):
+        self.ids.sensores.clear_widgets()
+        for key, value in self.tags.items():
             cb = LabeledCheckBoxHistTable()
             cb.ids.label.text = key
             cb.ids.label.color = value['color']
             cb.id = key
             self.ids.sensores.add_widget(cb)
-    
- 
             
     def update_table(self, data, tags_info):
         self.ids.data_table.clear_widgets()

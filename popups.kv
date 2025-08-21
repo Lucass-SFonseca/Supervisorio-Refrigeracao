@@ -560,16 +560,15 @@
                 LabeledChangeBoxDataGraph:
                     id: calores
                     on_kv_post:
-                        self.ids.n_label.text = 'Temperatura'
+                        self.ids.n_label.text = 'Temperatura_saida'   # <--- corrigido
                         self.ids.checkbox.group = 'cb_group'
                         self.ids.checkbox.active = True
                         self.ids.unidaderef.text = "Temperatura [°C]"
-                        
 
                 LabeledChangeBoxDataGraph:
                     id: pot
                     on_kv_post:
-                        self.ids.n_label.text = 'Potencia_ativa'
+                        self.ids.n_label.text = 'potencia_ativa_total'   # <--- corrigido
                         self.ids.checkbox.group = 'cb_group'
                         self.ids.unidaderef.text = "Potência [kW]"
 
@@ -583,7 +582,7 @@
                 LabeledChangeBoxDataGraph:
                     id: crnt
                     on_kv_post:
-                        self.ids.n_label.text = 'Corrente_media'
+                        self.ids.n_label.text = 'corrente_media'
                         self.ids.checkbox.group = 'cb_group'
                         self.ids.unidaderef.text = "Corrente [A]"
 

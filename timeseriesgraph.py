@@ -110,12 +110,14 @@ class TimeSeriesGraph(Graph):
                     self.xmax = max(self.plots[plot_number].points)[0]
                 else:
                     Clock.schedule_once(self.clearLabel)
-                self.update_x_labels()
+                self.update_x_labels(self._timestamps) 
             else:
                 # Verifica se o número de pontos é maior que zero para atribuir corretamente o índice da medição
                 self.plots[plot_number].points.append((self._numMeds,meas[1]))    
                     
                 # Verifica se o número de pontos é maior que o número máximo e remove os pontos mais antigos
                 self.plots[plot_number].points = self.plots[plot_number].points[-self._max_points:]                
+                self.update_x_labels(self._timestamps) 
+
         except Exception as e:
             print(e.args)
