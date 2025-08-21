@@ -60,7 +60,6 @@ class MainWidget(BoxLayout):
         print("Tags disponíveis no sistema:")
         for key in self._tags.keys():
             print(f"  - {key}")
-    
     def startDataRead(self, ip, port):
         self._serverIP = ip
         self._serverPort = port
