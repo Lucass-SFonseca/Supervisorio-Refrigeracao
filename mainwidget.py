@@ -45,7 +45,6 @@ class MainWidget(BoxLayout):
         self._atuacao=Atuacao()
         self.motor_ligado = False
         self.tipo_partida = 3
-        self._htable = HistTablePopup(tags=self._tags)
 
         self._tags = kwargs.get('modbus_addrs')
         for key,value in self._tags.items():
@@ -241,9 +240,6 @@ class MainWidget(BoxLayout):
     def stopRefresh(self):
         self._updateWidgets = False
         
-    def abrirHistorico(self):
-        print("Abrindo popup de histórico...")
-        self._htable.open()
     
     def getDataDB(self):
         """ 
