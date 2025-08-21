@@ -42,7 +42,7 @@ class MainWidget(BoxLayout):
         self._atuacao=Atuacao()
         self.motor_ligado = False
         self.tipo_partida = 3
-        self._htable = HistTablePopup(tags=self._tags)
+        self._selected_tag = "Temperatura_saida"
 
         self._tags = kwargs.get('modbus_addrs')
         for key,value in self._tags.items():
@@ -105,13 +105,13 @@ class MainWidget(BoxLayout):
     def readFloatPoint(self, endereco):
         # with self._lock:
         leitura = self._modbusClient.read_holding_registers(endereco,2)
-        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
+        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.BIG, wordorder = Endian.LITTLE)
 
         return decoder.decode_32bit_float()
 
     def leitura_bit(self, addr, bit):
         leitura = self._modbusClient.read_holding_registers(addr, 1)
-        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.Big, wordorder = Endian.Little)
+        decoder = BinaryPayloadDecoder.fromRegisters(leitura, byteorder = Endian.BIG, wordorder = Endian.LITTLE)
 
         lista1 = decoder.decode_bits()
         lista2 = decoder.decode_bits()
@@ -183,15 +183,50 @@ class MainWidget(BoxLayout):
         self.ids.lb_vazao.size = (self.ids.vazao.size[0] * self._meas['values']['Vazao_saida_ar'] / 2000, self.ids.vazao.size[1])
 
         # Atualização do gráfico    
-        self._graph.ids.graph.updateGraph((self._meas['timestamp'],self._meas['values']['Temperatura_saida']),0)
+        if (self._selected_tag in self._meas['values']and self._meas['values'][self._selected_tag] is not None ):
+            self._graph.ids.graph.updateGraph((self._meas['timestamp'], self._meas['values'][self._selected_tag]), 0)
+
+    def get_tag_nicknames(self):
+        """
+        Retorna um dicionário com os nicks das tags
+        """
+        nicks = {}
+        for key, value in self._tags.items():
+            nicks[key] = value.get('nick', key)  # Usa o nick se existir, senão usa a chave
+        return nicks
+    
+    def set_graph_variable(self, var_name, y_label=None):
+        self._selected_tag = var_name
+
+        # pega o nome legível da tag (ou usa a chave se não tiver 'label')
+        nome_legivel = self._tags[var_name].get('label', var_name)
+
+        # atualiza título do popup
+        self._graph.title = f"Gráfico de {nome_legivel}"
+
+        # Obtém limites
+        ymin = self._tags[var_name].get('ymin', 0)
+        ymax = self._tags[var_name].get('ymax', 50)
+
+        # Configura limites no gráfico
+        self._graph.ids.graph.ymin = ymin
+        self._graph.ids.graph.ymax = ymax
+        self._graph.ids.graph.y_ticks_major = ymax / 10
+        self._graph.ids.graph.padding = 5
+
+        # Ajusta rótulo do eixo Y (se não passar y_label, usa o label do dicionário)
+        self._graph.ids.graph.ylabel = y_label if y_label else nome_legivel
+
+        # Limpa e adiciona novo plot
+        self._graph.ids.graph.clearPlots()
+        new_plot = LinePlot(line_width=1.5, color=self._tags[var_name]['color'])
+        self._graph.plot = new_plot
+        self._graph.ids.graph.add_plot(new_plot)
 
     def stopRefresh(self):
         self._updateWidgets = False
         
-    def abrirHistorico(self):
-        print("Abrindo popup de histórico...")
-        self._htable.open()
-    
+
     def getDataDB(self):
         """ 
         Busca dados do DB e preenche tabela 

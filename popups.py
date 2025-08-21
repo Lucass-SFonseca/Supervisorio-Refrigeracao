@@ -61,6 +61,8 @@ class Atuacao(Popup):
 
 class LabeledCheckBoxDataGraph(BoxLayout):
     pass
+class LabeledChangeBoxDataGraph(BoxLayout):
+    pass
 
 class DataGraphPopup(Popup):
     def __init__(self, xmax, plot_color, **kwargs):
@@ -68,6 +70,49 @@ class DataGraphPopup(Popup):
         self.plot = LinePlot(line_width=1.5, color=plot_color)
         self.ids.graph.add_plot(self.plot)
         self.ids.graph.xmax = xmax
+    def update_nicknames(self):
+        """
+        Atualiza os textos dos checkboxes com os nicks das tags
+        """
+        """
+        Método que atualiza os nicks - AGORA DEFINIDO
+        """
+        print("Método update_nicknames() chamado!")
+        # Adicione aqui a lógica de atualização
+        if hasattr(self, 'tags') and self.tags:
+            print("Tags disponíveis:", list(self.tags.keys()))
+        try:
+            if hasattr(self, 'tags') and self.tags:
+                print("Tags disponíveis para atualização:", list(self.tags.keys()))
+                
+                # Atualiza cada widget individualmente
+                widget_map = {
+                    'calores': 'Temperatura',
+                    'pot': 'Potencia_ativa', 
+                    'vel': 'Velocidade_saida_ar',
+                    'crnt': 'Corrente_media'
+                }
+                
+                for widget_id, tag_name in widget_map.items():
+                    if tag_name in self.tags:
+                        nick = self.tags[tag_name].get('nick', tag_name)
+                        print(f"Atualizando {widget_id} com nick: {nick}")
+                        
+                        # Atualiza diretamente o texto do nick_label
+                        if hasattr(self.ids, widget_id):
+                            widget = self.ids[widget_id]
+                            if hasattr(widget.ids, 'nick_label'):
+                                widget.ids.nick_label.text = nick
+                            else:
+                                print(f"nick_label não encontrado em {widget_id}")
+                    
+            else:
+                print("Tags não disponíveis para atualização")
+                
+        except Exception as e:
+            print(f"Erro ao atualizar nicks: {e}")
+            import traceback
+            traceback.print_exc()
 
 class HistTablePopup(Popup):
     def __init__(self, **kwargs):
@@ -81,14 +126,7 @@ class HistTablePopup(Popup):
             cb.id = key
             self.ids.sensores.add_widget(cb)
     
-    def _populate_checkboxes(self, tags):
-        self.ids.sensores.clear_widgets()
-        for key, value in tags.items():
-            cb = LabeledCheckBoxHistTable()
-            cb.ids.label.text = key
-            cb.ids.label.color = value['color']
-            cb.id = key
-            self.ids.sensores.add_widget(cb)
+ 
             
     def update_table(self, data, tags_info):
         self.ids.data_table.clear_widgets()
@@ -101,21 +139,31 @@ class HistTablePopup(Popup):
         header_row = GridLayout(cols=len(tags_info) + 1,
                                 size_hint_y=None, height=dp(30))
         header_row.add_widget(Label(text="Timestamp", bold=True, color=(0,0,0,1)))
-        for tag_name in tags_info:
-            txt = f"{self.LABELS.get(tag_name, tag_name)}\n({tags_info[tag_name]['unid']})"
-            header_row.add_widget(Label(text=txt, bold=True, color=(0,0,0,1)))
+        for tag_name, meta in tags_info.items():
+            unit = meta.get('unid', '')
+            header_row.add_widget(Label(
+                text=f"{tag_name}\n({unit})",
+                bold=True, color=(0,0,0,1)
+            ))
         self.ids.data_table.add_widget(header_row)
 
         # Linhas de dados
-        for i in range(len(data["timestamp"])):
-            data_row = GridLayout(cols=len(tags_info) + 1,
-                                  size_hint_y=None, height=dp(30))
-            ts = data["timestamp"][i]
+        for i, ts in enumerate(data["timestamp"]):
+            data_row = GridLayout(cols=len(tags_info) + 1,size_hint_y=None, height=dp(30))
             ts_fmt = ts.strftime("%d/%m/%Y %H:%M:%S")
             data_row.add_widget(Label(text=ts_fmt, color=(0,0,0,1)))
+            
             for tag_name in tags_info:
                 value = data[tag_name][i]
-                txt = f"{value:.2f}" if isinstance(value, (int, float)) else "-"
+                 # Trata None, bool e números de forma amigável
+                if value is None:
+                    txt = "-"
+                elif isinstance(value, bool):
+                    txt = "1" if value else "0"
+                elif isinstance(value, (int, float)):
+                    txt = f"{value:.2f}"
+                else:
+                    txt = str(value)
                 data_row.add_widget(Label(text=txt, color=(0,0,0,1)))
             self.ids.data_table.add_widget(data_row)
                        
