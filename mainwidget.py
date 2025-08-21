@@ -52,12 +52,15 @@ class MainWidget(BoxLayout):
             plot_color = (random.random(), random.random(), random.random(), 1)
             self._tags[key]['color'] = plot_color
 
-        self._selected_tag = "Temperatura"
+        self._selected_tag = "Temperatura_saida"
         self._graph = DataGraphPopup(self._max_points, self._tags['Temperatura_saida']['color'])
         self._htable = HistTablePopup(tags=self._tags)
         # GARANTIR que as tags são passadas
         self._graph.tags = self._tags
         print("Tags passadas para o gráfico:", list(self._tags.keys()))
+        print("Tags disponíveis no sistema:")
+        for key in self._tags.keys():
+            print(f"  - {key}")
     def startDataRead(self, ip, port):
         self._serverIP = ip
         self._serverPort = port
@@ -163,8 +166,8 @@ class MainWidget(BoxLayout):
         if 'Vazao_saida_ar' in self.ids:
             self.ids.Vazao_saida_ar.text = f"{self._meas['values']['Vazao_saida_ar']/self._tags['Vazao_saida_ar']['div']}"
         
-        if 'Temperatura' in self.ids:
-            self.ids.Temperatura.text = f"{round(self._meas['values']['Temperatura_saida'],2)} °C"
+        if 'Temperatura_saida' in self.ids:
+            self.ids.Temperatura_saida.text = f"{round(self._meas['values']['Temperatura_saida'],2)} °C"
         if 'pit01' in self.ids:
             self.ids.pit01.text = f"{self._meas['values']['ve.pit01']}"
         

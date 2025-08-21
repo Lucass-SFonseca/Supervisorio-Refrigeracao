@@ -76,23 +76,16 @@ class DataGraphPopup(Popup):
         """
         Atualiza os textos dos checkboxes com os nicks das tags
         """
-        """
-        Método que atualiza os nicks - AGORA DEFINIDO
-        """
-        print("Método update_nicknames() chamado!")
-        # Adicione aqui a lógica de atualização
-        if hasattr(self, 'tags') and self.tags:
-            print("Tags disponíveis:", list(self.tags.keys()))
         try:
             if hasattr(self, 'tags') and self.tags:
                 print("Tags disponíveis para atualização:", list(self.tags.keys()))
                 
-                # Atualiza cada widget individualmente
+                # MAPEAMENTO CORRETO - use os nomes EXATOS das suas tags
                 widget_map = {
-                    'calores': 'Temperatura',
-                    'pot': 'Potencia_ativa', 
-                    'vel': 'Velocidade_saida_ar',
-                    'crnt': 'Corrente_media'
+                    'calores': 'Temperatura_saida',      # ← Nome exato da tag
+                    'pot': 'potencia_ativa_total',       # ← Nome exato da tag  
+                    'vel': 'Velocidade_saida_ar',        # ← Nome exato da tag
+                    'crnt': 'corrente_media'             # ← Nome exato da tag
                 }
                 
                 for widget_id, tag_name in widget_map.items():
@@ -105,14 +98,19 @@ class DataGraphPopup(Popup):
                             widget = self.ids[widget_id]
                             if hasattr(widget.ids, 'nick_label'):
                                 widget.ids.nick_label.text = nick
+                                print(f"✅ {widget_id} -> {nick}")
                             else:
-                                print(f"nick_label não encontrado em {widget_id}")
-                    
+                                print(f"❌ nick_label não encontrado em {widget_id}")
+                        else:
+                            print(f"❌ Widget {widget_id} não encontrado")
+                    else:
+                        print(f"❌ Tag {tag_name} não encontrada nas tags disponíveis")
+                        
             else:
-                print("Tags não disponíveis para atualização")
+                print("❌ Tags não disponíveis para atualização")
                 
         except Exception as e:
-            print(f"Erro ao atualizar nicks: {e}")
+            print(f"❌ Erro ao atualizar nicks: {e}")
             import traceback
             traceback.print_exc()
 
