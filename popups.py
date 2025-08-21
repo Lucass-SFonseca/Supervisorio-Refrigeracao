@@ -118,29 +118,30 @@ class HistTablePopup(Popup):
     def __init__(self, **kwargs):
         tags = kwargs.pop("tags", {})
         super().__init__(**kwargs)
-        self.tags = tags or {}
-        self.bind(on_open=lambda *a: self._populate_checkboxes())
-    
-    def _populate_checkboxes(self):
-        self.ids.sensores.clear_widgets()
-        for key, value in self.tags.items():
+        for key, value in tags.items():
             cb = LabeledCheckBoxHistTable()
             cb.ids.label.text = key
             cb.ids.label.color = value['color']
             cb.id = key
             self.ids.sensores.add_widget(cb)
+    
             
     def update_table(self, data, tags_info):
+        # Limpa a tabela
         self.ids.data_table.clear_widgets()
+
+        # Sem dados => mensagem
         if not data or len(data.get("timestamp", [])) == 0:
             self.ids.data_table.add_widget(Label(
                 text="Nenhum dado encontrado.", color=(0,0,0,1)))
             return
 
-        # Cabeçalho
+        # --- Cabeçalho ---
         header_row = GridLayout(cols=len(tags_info) + 1,
                                 size_hint_y=None, height=dp(30))
         header_row.add_widget(Label(text="Timestamp", bold=True, color=(0,0,0,1)))
+
+        # Usa diretamente o nome da tag; se quiser nomes bonitos, crie um dict opcional LABELS
         for tag_name, meta in tags_info.items():
             unit = meta.get('unid', '')
             header_row.add_widget(Label(
@@ -149,15 +150,17 @@ class HistTablePopup(Popup):
             ))
         self.ids.data_table.add_widget(header_row)
 
-        # Linhas de dados
+        # --- Linhas de dados ---
         for i, ts in enumerate(data["timestamp"]):
-            data_row = GridLayout(cols=len(tags_info) + 1,size_hint_y=None, height=dp(30))
+            data_row = GridLayout(cols=len(tags_info) + 1,
+                                size_hint_y=None, height=dp(30))
             ts_fmt = ts.strftime("%d/%m/%Y %H:%M:%S")
             data_row.add_widget(Label(text=ts_fmt, color=(0,0,0,1)))
-            
+
             for tag_name in tags_info:
                 value = data[tag_name][i]
-                 # Trata None, bool e números de forma amigável
+
+                # Trata None, bool e números de forma amigável
                 if value is None:
                     txt = "-"
                 elif isinstance(value, bool):
@@ -166,8 +169,11 @@ class HistTablePopup(Popup):
                     txt = f"{value:.2f}"
                 else:
                     txt = str(value)
+
                 data_row.add_widget(Label(text=txt, color=(0,0,0,1)))
+
             self.ids.data_table.add_widget(data_row)
+
                        
 class LabeledCheckBoxHistTable(BoxLayout):
     def __init__(self, **kwargs):
