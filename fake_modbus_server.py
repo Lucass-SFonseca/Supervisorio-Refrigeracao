@@ -77,5 +77,5 @@ if __name__ == "__main__":
     t.daemon = True
     t.start()
 
-    print("Servidor Modbus fake rodando em 127.0.0.1:5020")
-    StartTcpServer(context, address=("localhost", 5020))
+    print("Servidor Modbus fake rodando em 127.0.0.1:502")
+    StartTcpServer(context, address=("localhost", 502))

@@ -171,17 +171,32 @@ class MainWidget(BoxLayout):
             self.ids.tit02.text = f"{self._meas['values']['ve.tit02']}"
 
         # Atualização das labels do popup Leituras
-        for key,value in self._tags.items():
+        for key, value in self._tags.items():
             if self.ids.get(key) != None:
                 self.ids[key].text = str(self._meas['values'][key])
             elif self._leitura.ids.get(key) != None:
                 self._leitura.ids[key].text = str(self._meas['values'][key])
+
+        # Atualização das labels do popup Atuacao
+#        self._atuacao.ids.termo_temp.text = f"{self._meas['values']['ve.sp_termo']}"
+#        self._atuacao.ids.freqC.text = f"{self._meas['values']['ve.frequencia_co']}"
 
         # Atualização do nível do termômetro
         self.ids.lb_temp.size = (self.ids.lb_temp.size[0],self._meas['values']['Temperatura_saida']/45*self.ids.termometro.size[1])
 
         # Atualização do widget de vazão
         self.ids.lb_vazao.size = (self.ids.vazao.size[0] * self._meas['values']['Vazao_saida_ar'] / 2000, self.ids.vazao.size[1])
+
+        # Atualização estado dos botoes
+        self.ids.btn_soft.background_normal = "imgs/botao_soft_press.jpg" if self._meas['values']['ve.indica_driver'] == 1 else "imgs/botao_soft.jpg"
+        self.ids.btn_inversor.background_normal = "imgs/botao_inv_press.jpg" if self._meas['values']['ve.indica_driver'] == 2 else "imgs/botao_inv.jpg"
+        self.ids.btn_direta.background_normal = "imgs/botao_direta_press.jpg" if self._meas['values']['ve.indica_driver'] == 0 else "imgs/botao_direta.jpg"
+
+        # Atualização estado dos compressores
+        if self._meas['values']['ve.sel_tipo_compressor'] == 0:
+            self.ids.base_ig.source = "imgs/base_scroll_on.png" if self._meas['values']['ve.st_compressor'] == 0 else "imgs/base_scroll_off.png"
+        if self._meas['values']['ve.sel_tipo_compressor'] == 1:
+            self.ids.base_ig.source = "imgs/base_hermetico_on.png" if self._meas['values']['ve.st_compressor'] == 0 else "imgs/base_hermetico_off.png"
 
         # Atualização do gráfico    
         if (self._selected_tag in self._meas['values']and self._meas['values'][self._selected_tag] is not None ):
@@ -269,11 +284,6 @@ class MainWidget(BoxLayout):
 
     def selecionarPartida(self, tipo):
         self.tipo_partida = tipo
-
-        # Atualiza imagens dos botões
-        self.ids.btn_soft.background_normal = "imgs/botao_soft_press.jpg" if tipo == 1 else "imgs/botao_soft.jpg"
-        self.ids.btn_inversor.background_normal = "imgs/botao_inv_press.jpg" if tipo == 2 else "imgs/botao_inv.jpg"
-        self.ids.btn_direta.background_normal = "imgs/botao_direta_press.jpg" if tipo == 3 else "imgs/botao_direta.jpg"
 
         with self._lock:
             self._modbusClient.write_single_register(1324,tipo)

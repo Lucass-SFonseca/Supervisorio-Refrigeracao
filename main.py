@@ -48,8 +48,12 @@ class MainApp(App):
             've.pit01': {'addr': 1222, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'PSI'},
             've.pit02': {'addr': 1224, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'PSI'},
             've.pit03': {'addr': 1226, 'tipo': 'FP', 'l/e': 'l', 'div': 10, 'unid': 'mmH2O'},
-            've.nv_escreve': {'addr': 1310, 'tipo': 'FP', 'l/e': 'l/e', 'div': 1, 'unid': '%'},
-            've.habilita': { 'addr': 1330, 'tipo': '4X','div':	1, 'bit': 3}
+            've.mv_escreve': {'addr': 1310, 'tipo': 'FP', 'l/e': 'l/e', 'div': 1, 'unid': '%'},
+            've.sp_termo': {'addr': 1338, 'tipo': '4X', 'l/e': 'l/e', 'div': 1, 'unid': '°C'},
+            've.frequencia_co': {'addr': 751, 'tipo': '4X', 'l/e': 'l/e', 'div': 100, 'unid': 'Hz'},
+            've.indica_driver': {'addr': 1216, 'tipo': '4X', 'l/e': 'l', 'div': 1},
+            've.st_compressor': { 'addr': 1331, 'tipo': '4X','div': 1, 'bit': 5},
+            've.sel_tipo_compressor': { 'addr': 1328, 'tipo': '4X','div': 1, 'bit': 1}
         }
         )
 
