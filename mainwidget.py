@@ -198,7 +198,6 @@ class MainWidget(BoxLayout):
         # Atualização do gráfico    
         if (self._selected_tag in self._meas['values']and self._meas['values'][self._selected_tag] is not None ):
             self._graph.ids.graph.updateGraph((self._meas['timestamp'], self._meas['values'][self._selected_tag]), 0)
-    
     def get_tag_nicknames(self):
         """
         Retorna um dicionário com os nicks das tags
@@ -207,7 +206,6 @@ class MainWidget(BoxLayout):
         for key, value in self._tags.items():
             nicks[key] = value.get('nick', key)  # Usa o nick se existir, senão usa a chave
         return nicks
-    
     def set_graph_variable(self, var_name, y_label=None):
         self._selected_tag = var_name
 
@@ -236,9 +234,14 @@ class MainWidget(BoxLayout):
         self._graph.plot = new_plot
         self._graph.ids.graph.add_plot(new_plot)
 
+
+
+
+
     def stopRefresh(self):
         self._updateWidgets = False
-         
+        
+    
     def getDataDB(self):
         """ 
         Busca dados do DB e preenche tabela 
@@ -268,7 +271,8 @@ class MainWidget(BoxLayout):
             import traceback
             print("Erro na getDataDB:", e)
             traceback.print_exc()
-          
+
+            
     def parseDTString(self, datetime_str):
         """ Converte string do usuário em datetime """
         try:
